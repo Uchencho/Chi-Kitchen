@@ -15,6 +15,16 @@ class RegisterSerializer(serializers.ModelSerializer):
             'confirm_password',
         ]
 
+    def validate(self, data):
+        """
+        Validates that the password are the same
+        """
+        pw  = data.get('password')
+        pw2 = data.get('confirm_password')
+        if pw != pw2:
+            raise serializers.ValidationError("Passwords Must Match")
+        return data
+
     def create(self, validated_data):
         user_obj = User(
             email=validated_data.get('email')
