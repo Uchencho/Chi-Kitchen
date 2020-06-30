@@ -5,4 +5,5 @@ from django.urls import path, include
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/accounts/', include('accounts.api.urls', namespace='api-accounts')),
+    path('o/', include('oauth2_provider.urls', namespace='oauth2_provider')),
 ]
