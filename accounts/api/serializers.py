@@ -33,3 +33,14 @@ class RegisterSerializer(serializers.ModelSerializer):
         user_obj.save()
 
         return user_obj
+
+
+class LoginSerializer(serializers.ModelSerializer):
+    password            = serializers.CharField(style={'input_type':'password'}, write_only=True)
+
+    class Meta:
+        model   = User
+        fields  = [
+            'username',
+            'password',
+        ]

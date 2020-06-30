@@ -1,5 +1,5 @@
 from accounts.models import User
-from .serializers import RegisterSerializer
+from .serializers import RegisterSerializer, LoginSerializer
 
 import requests
 
@@ -18,6 +18,7 @@ class RegisterAPIView(generics.CreateAPIView):
 
 
 class LoginView(APIView):
+    serializer_class    = LoginSerializer
     permission_classes  = []
     
     def post(self, request):
@@ -32,3 +33,7 @@ class LoginView(APIView):
             },
         )
         return Response(r.json())
+
+
+# "username" : "alozuyche@gmail.com",
+# "password" : "KelechI94"

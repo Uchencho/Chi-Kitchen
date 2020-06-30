@@ -3,39 +3,6 @@ from django.contrib.auth.forms import UserCreationForm, UserChangeForm
 from .models import User
 from django.contrib.auth.forms import ReadOnlyPasswordHashField
 
-
-# class CustomUserCreationForm(UserCreationForm):
-#     first_name = forms.CharField(max_length=100, required=True)
-#     last_name = forms.CharField(max_length=100, required=True)
-#     email = forms.EmailField(max_length=254, help_text='eg. youremail@anyemail.com')
-#     address = forms.CharField(max_length=250, required=True)
-#     state = forms.CharField(max_length=25, required=True)
-#     city = forms.CharField(max_length=25, required=True)
-#     phone = forms.IntegerField(required=True)
-    
-#     class Meta(UserCreationForm.Meta):
-#         model = CustomUser
-#         fields = (
-# 			'username',
-# 			'first_name',
-# 			'last_name',
-# 			'email',
-# 			'address', 
-# 			'city',
-# 			'state',
-# 			'phone',
-# 			)
-#     def save(self, commit=True):
-#         user = super(CustomUserCreationForm, self).save(commit=False)
-#         user.address = self.cleaned_data['address']
-#         user.state = self.cleaned_data['state']
-#         user.city = self.cleaned_data['city']
-#         user.phoneNo = self.cleaned_data['phone']
-#         if commit:
-#             user.save()
-#         return user
-
-
 class UserCreationForm(forms.ModelForm):
     """A form for creating new users. Includes all the required
     fields, plus a repeated password."""
@@ -46,14 +13,6 @@ class UserCreationForm(forms.ModelForm):
     class Meta(UserChangeForm.Meta):
         model = User
         fields = ('email', 'password', 'password1')
-
-    def clean_password2(self):
-        # Check that the two password entries match
-        password1 = self.cleaned_data.get("password1")
-        password2 = self.cleaned_data.get("password2")
-        if password1 and password2 and password1 != password2:
-            raise forms.ValidationError("Passwords don't match")
-        return password2
 
     def save(self, commit=True):
         # Save the provided password in hashed format

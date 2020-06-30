@@ -12,21 +12,17 @@ class MyUserAdmin(admin.ModelAdmin):
     form = UserChangeForm
     add_form = UserCreationForm
 
-    # The fields to be used in displaying the User model.
-    # These override the definitions on the base UserAdmin
-    # that reference specific fields on auth.User.
     list_display = ['email', 
                     'username', 
                     'first_name', 
                     'phone_number', 
                     'is_active',
                     'is_superuser']
-    # list_filter = ('is_admin',)
     fieldsets = (
         ("Registeration", {'fields': ('email', 'username', 'password')}),
-        ('Personal info', {'fields': ('phone_number', 'first_name')}),
-        ('Permissions', {'fields': ('is_active','is_superuser',)}),
-        ('Important dates', {'fields': ('last_login',)}),
+        ('Personal info', {'fields': ('phone_number', 'first_name', 'last_name')}),
+        ('Permissions', {'fields': ('is_active','is_superuser','is_staff')}),
+        ('Important dates', {'fields': ('last_login', 'date_joined',)}),
     )
     add_fieldsets = (
         (None, {
@@ -34,8 +30,8 @@ class MyUserAdmin(admin.ModelAdmin):
             'fields': ('email', 'phone_number', 'password1', 'password2')}
         ),
     )
-    search_fields = ('email',)
-    ordering = ('email',)
+    search_fields = ('email', 'username')
+    ordering = ('id',)
     filter_horizontal = ()
 
 # Now register the new UserAdmin...
