@@ -44,13 +44,4 @@ class LoginSerializer(serializers.ModelSerializer):
             'username',
             'password',
         ]
-
-    def validate_username(self, value):
-        # Not working YET
-        """
-        Validates that the email exists
-        """
-        qs = User.objects.filter(email__iexact=value)
-        if not qs.exists():
-            raise serializers.ValidationError("Email address does not exists, kindly register")
-        return data
+        
