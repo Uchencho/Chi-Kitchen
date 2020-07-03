@@ -1,11 +1,13 @@
 from django.db import models
 
-class DishQuerySet(models.QuerySet):
+from accounts.models import User
+
+class FoodQuerySet(models.QuerySet):
     pass
 
-class DishManager(models.Manager):
+class FoodManager(models.Manager):
     def get_queryset(self):
-        return DishQuerySet(self.model, using=self._db)
+        return FoodQuerySet(self.model, using=self._db)
 
 class Dish(models.Model):
 
@@ -24,7 +26,21 @@ class Dish(models.Model):
     date_available  = models.DateField()
     tag             = models.CharField(max_length=100, blank=True)
 
-    objects = DishManager()
+    objects = FoodManager()
 
     def __str__(self):
         return self.name
+
+
+class Order(models.Model):
+    customer_name      = models.ForeignKey(User, on_delete=models.CASCADE)
+    time_of_order      = models.DateTimeField(auto_now_add=True)
+    updated            = models.DateTimeField(auto_now=True)
+    address            = models.TextField()
+    dish               = models.ForeignKey('Dish', on_delete=models.CASCADE)
+    total_cost         = models.IntegerField()
+
+    objects = FoodManager()
+
+    def __str__(self):
+        return str(self.address)[:50]
