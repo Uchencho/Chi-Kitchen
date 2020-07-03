@@ -27,11 +27,6 @@ class LoginView(APIView):
 
         email = request.data.get('username')
         qs = User.objects.filter(email__iexact=email)
-        if not qs.exists():
-            content = {
-                    "message": "User with email address does not exist"
-                }
-            return Response(content, status=status.HTTP_400_BAD_REQUEST)
 
         r = requests.post(
             BASE_URL + 'o/token/',
