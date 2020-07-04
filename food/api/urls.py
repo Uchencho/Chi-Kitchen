@@ -1,8 +1,8 @@
-from oauth2_provider.views import RevokeTokenView
+from .views import UserOrders
 from django.urls import path, include
 
 app_name = "food"
 
 urlpatterns = [
-    path('logout/', RevokeTokenView.as_view(), name='logout'),
+    path('myorders/', UserOrders.as_view(), name='orders'),
 ]
