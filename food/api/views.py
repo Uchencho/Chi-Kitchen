@@ -7,6 +7,9 @@ class UserOrders(generics.ListAPIView):
     queryset            = Order.objects.all()
     serializer_class    = OrderListSerializer
 
+    def get_serializer_context(self, *args, **kwargs):
+        return {"request":self.request}
+
     def get_queryset(self):
         """
         Filter results to return only user's Orders
