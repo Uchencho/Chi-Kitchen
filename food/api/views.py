@@ -4,7 +4,6 @@ from food.models import Dish, Order
 from .serializers import OrderListSerializer
 
 class UserOrders(generics.ListAPIView):
-    queryset            = Order.objects.all()
     serializer_class    = OrderListSerializer
 
     def get_serializer_context(self, *args, **kwargs):
