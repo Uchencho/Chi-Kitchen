@@ -5,8 +5,6 @@ from food.models import Order, Dish
 class OrderListSerializer(serializers.ModelSerializer):
     customer_name     = serializers.SerializerMethodField(read_only=True)
     customer_email    = serializers.SerializerMethodField(read_only=True)
-    time_of_order     = serializers.SerializerMethodField(read_only=True)
-    updated           = serializers.SerializerMethodField(read_only=True)
     dish              = serializers.CharField(source='dish.name', read_only=True)
     dish_cost         = serializers.IntegerField(source='dish.price', read_only=True)
 
@@ -32,23 +30,10 @@ class OrderListSerializer(serializers.ModelSerializer):
         context = self.context['request']
         return context.user.email
 
-    def get_time_of_order(self, obj):
-        context = self.context['request']
-        order_model = Order.objects.filter(customer_name=context.user).first()
-        return order_model.time_of_order.strftime("%d-%b-%Y %H:%M")
-
-    def get_updated(self, obj):
-        context = self.context['request']
-        order_model = Order.objects.filter(customer_name=context.user).first()
-        return order_model.updated.strftime("%d-%b-%Y %H:%M")
-
-
 
 class OrderCreateSerializer(serializers.ModelSerializer):
     customer_name     = serializers.SerializerMethodField(read_only=True)
     dish              = serializers.CharField()
-    time_of_order     = serializers.SerializerMethodField(read_only=True)
-    updated           = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = Order
@@ -58,24 +43,14 @@ class OrderCreateSerializer(serializers.ModelSerializer):
             'dish',
             'time_of_order', 
             'updated', 
-            'address', 
+            'address',
+            'qty', 
             'total_cost',
         ]
 
     def get_customer_name(self, obj):
         context = self.context['request']
         return context.user.username
-
-    def get_time_of_order(self, obj):
-        context = self.context['request']
-        order_model = Order.objects.filter(customer_name=context.user).first()
-        return order_model.time_of_order.strftime("%d-%b-%Y %H:%M")
-
-    def get_updated(self, obj):
-        context = self.context['request']
-        order_model = Order.objects.filter(customer_name=context.user).first()
-        return order_model.updated.strftime("%d-%b-%Y %H:%M")
-
 
     def validate_dish(self, value):
         qs = Dish.objects.filter(name__iexact=value)
@@ -89,9 +64,13 @@ class OrderCreateSerializer(serializers.ModelSerializer):
         """
         dish_name = data.get("dish")
         total_cost = data.get("total_cost")
+        qty = data.get("qty")
+
         dish_model = Dish.objects.filter(name__iexact=dish_name).first()
         if total_cost < dish_model.price:
             raise serializers.ValidationError({"Total Cost" : "Total cost cannot be less than cost of dish"})
+        elif total_cost < (dish_model.price * qty):
+            raise serializers.ValidationError({"Total Cost" : "Total cost cannot be less than unit cost multiplied by qty"})
         return data
 
     def create(self, validated_data):
@@ -102,10 +81,29 @@ class OrderCreateSerializer(serializers.ModelSerializer):
         cus_ = context.user
         dish_model = Dish.objects.filter(name__iexact=validated_data.get('dish')).first()
 
+    #   Cannot bulk create because of the relationship to other tables
+    #   Order.objects.bulk_create([
+    #     Order(
+    #         customer_name = jh,
+    #         address = add,
+    #         dish = first_dish,
+    #         qty = 2,
+    #         total_cost = 15000
+    #     ),
+    #     Order(
+    #         customer_name = jh,
+    #         address = add,
+    #         dish = second_dish,
+    #         qty = 3,
+    #         total_cost = 18000
+    #     )
+    # ])
+
         ord_obj = Order.objects.create(
             customer_name = cus_,
             address = validated_data.get('address'),
             dish = dish_model,
+            qty = validated_data.get('qty'),
             total_cost = validated_data.get('total_cost')
         )
         return ord_obj
