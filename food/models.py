@@ -38,6 +38,7 @@ class Order(models.Model):
     updated            = models.DateTimeField(auto_now=True)
     address            = models.TextField()
     dish               = models.ForeignKey('Dish', on_delete=models.CASCADE)
+    qty                = models.IntegerField()
     total_cost         = models.IntegerField()
 
     objects = FoodManager()
