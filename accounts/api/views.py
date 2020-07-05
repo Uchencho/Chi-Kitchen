@@ -47,9 +47,13 @@ class LoginView(APIView):
         else:
             user_model = qs.first()
             content = r.json()
+            try:
+                last_login_val = user_model.last_login.strftime("%d-%b-%Y")
+            except:
+                last_login_val = user_model.date_joined.strftime("%d-%b-%Y")
             content['id'] = user_model.id
             content['fullname'] = user_model.first_name + " " + user_model.last_name
-            content["last_login"] = user_model.last_login.strftime("%d-%b-%Y")
+            content["last_login"] = last_login_val
             content["date_joined"] = user_model.date_joined.strftime("%d-%b-%Y")
 
             user_model.last_login = timezone.now()
