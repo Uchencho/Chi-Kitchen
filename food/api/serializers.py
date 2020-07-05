@@ -47,6 +47,8 @@ class OrderListSerializer(serializers.ModelSerializer):
 class OrderCreateSerializer(serializers.ModelSerializer):
     customer_name     = serializers.SerializerMethodField(read_only=True)
     dish              = serializers.CharField()
+    time_of_order     = serializers.SerializerMethodField(read_only=True)
+    updated           = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = Order
@@ -63,6 +65,17 @@ class OrderCreateSerializer(serializers.ModelSerializer):
     def get_customer_name(self, obj):
         context = self.context['request']
         return context.user.username
+
+    def get_time_of_order(self, obj):
+        context = self.context['request']
+        order_model = Order.objects.filter(customer_name=context.user).first()
+        return order_model.time_of_order.strftime("%d-%b-%Y %H:%M")
+
+    def get_updated(self, obj):
+        context = self.context['request']
+        order_model = Order.objects.filter(customer_name=context.user).first()
+        return order_model.updated.strftime("%d-%b-%Y %H:%M")
+
 
     def validate_dish(self, value):
         qs = Dish.objects.filter(name__iexact=value)
@@ -88,7 +101,7 @@ class OrderCreateSerializer(serializers.ModelSerializer):
         context = self.context['request']
         cus_ = context.user
         dish_model = Dish.objects.filter(name__iexact=validated_data.get('dish')).first()
-        
+
         ord_obj = Order.objects.create(
             customer_name = cus_,
             address = validated_data.get('address'),
