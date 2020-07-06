@@ -107,3 +107,46 @@ class OrderCreateSerializer(serializers.ModelSerializer):
             total_cost = validated_data.get('total_cost')
         )
         return ord_obj
+
+
+class OrderDetailSerializer(serializers.ModelSerializer):
+    customer_name     = serializers.SerializerMethodField(read_only=True)
+    dish              = serializers.CharField()
+
+    class Meta:
+        model = Order
+        fields = [
+            "id",
+            'customer_name',
+            'dish',
+            'time_of_order', 
+            'updated', 
+            'address',
+            'qty', 
+            'total_cost',
+        ]
+
+    def get_customer_name(self, obj):
+        context = self.context['request']
+        return context.user.username
+
+    def validate_dish(self, value):
+        qs = Dish.objects.filter(name__iexact=value)
+        if not qs.exists():
+            raise serializers.ValidationError("Dish does not exist. Kindly create first.")
+        return value
+
+    def validate(self, data):
+        """
+        Validates that the total price is more than the price of the food
+        """
+        dish_name = data.get("dish")
+        total_cost = data.get("total_cost")
+        qty = data.get("qty")
+
+        dish_model = Dish.objects.filter(name__iexact=dish_name).first()
+        if total_cost < dish_model.price:
+            raise serializers.ValidationError({"Total Cost" : "Total cost cannot be less than cost of dish"})
+        elif total_cost < (dish_model.price * qty):
+            raise serializers.ValidationError({"Total Cost" : "Total cost cannot be less than unit cost multiplied by qty"})
+        return data
