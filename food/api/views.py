@@ -97,11 +97,11 @@ class PaymentCheckoutView(APIView):
         PaymentHistory.objects.create(
             the_order = Order.objects.get(pk=order_id),
             customer  = self.request.user,
+            amount_paid = int(amount) / 100,
             authorization_url= resp.json()['data']['authorization_url'],
             access_code = resp.json()['data']['access_code'],
             reference = resp.json()['data']['reference'],
         )
 
         return Response({'response': "Updated Successfully",
-                        'data' : resp.json()
-        })
+                        'data' : resp.json()})

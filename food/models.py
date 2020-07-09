@@ -51,7 +51,7 @@ class Order(models.Model):
     objects = FoodManager()
 
     def __str__(self):
-        return str(self.id)
+        return str(self.dish.name)
 
 
 
@@ -65,6 +65,7 @@ class PaymentHistory(models.Model):
 
     the_order          = models.OneToOneField(Order, on_delete=models.CASCADE)
     customer           = models.ForeignKey(User, on_delete=models.CASCADE)
+    amount_paid        = models.IntegerField()
     status             = models.CharField(max_length=20, choices=PAYMENT_CHOICES, default='Pending')
     authorization_url  = models.URLField(blank=True, null=True)
     access_code        = models.CharField(max_length=200, blank=True, null=True)
