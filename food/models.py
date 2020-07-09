@@ -51,4 +51,30 @@ class Order(models.Model):
     objects = FoodManager()
 
     def __str__(self):
-        return str(self.address)[:50]
+        return str(self.id)
+
+
+
+class PaymentHistory(models.Model):
+
+    PAYMENT_CHOICES = [
+    ('Success', 'Success'),
+    ('Failed', 'Failed'),
+    ('Pending', 'Pending'),
+        ]
+
+    the_order          = models.OneToOneField(Order, on_delete=models.CASCADE)
+    customer           = models.ForeignKey(User, on_delete=models.CASCADE)
+    status             = models.CharField(max_length=20, choices=PAYMENT_CHOICES, default='Pending')
+    authorization_url  = models.URLField(blank=True, null=True)
+    access_code        = models.CharField(max_length=200, blank=True, null=True)
+    reference          = models.CharField(max_length=200, blank=True, null=True)
+    payment_channel    = models.CharField(max_length=200, blank=True, null=True)
+    transaction_date   = models.CharField(max_length=200, blank=True, null=True)
+    verify_status      = models.CharField(max_length=200, blank=True, null=True)
+
+    objects = FoodManager()
+
+    class Meta:
+        verbose_name = 'Paymnet History'
+        verbose_name_plural = 'Payment History'

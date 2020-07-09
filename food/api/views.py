@@ -1,5 +1,9 @@
 from rest_framework import generics, status, permissions
+from rest_framework.views import APIView
+from rest_framework.response import Response
+import requests
 
+from kitchen.settings import paystack_key
 from food.models import Dish, Order
 from .serializers import (
                             OrderListSerializer, 
@@ -73,3 +77,22 @@ class OrderDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
         Delete a User's Order
         """
         return self.destroy(request, *args, **kwargs)
+
+
+class PaymentCheckoutView(APIView):
+
+    def post(self, request):
+
+        email = self.request.user.email
+        amount = self.request.data.get("amount", 0)
+        link = "https://api.paystack.co/transaction/initialize"
+
+        headers = {'Content-Type': 'application/json',
+                    'Authorization' : 'Bearer ' + paystack_key}
+        data = {"email": email, "amount": amount}
+        print("\n\n", email, amount, "\n\n")
+        resp = requests.post(link, headers = headers, json=data)
+        print("\n\n", resp)
+        return Response({'response': "Updated Successfully",
+                        'data' : resp.json()
+        })
