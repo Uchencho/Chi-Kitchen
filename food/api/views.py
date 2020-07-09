@@ -4,7 +4,7 @@ from rest_framework.response import Response
 import requests
 
 from kitchen.settings import paystack_key
-from food.models import Dish, Order
+from food.models import Dish, Order, PaymentHistory
 from .serializers import (
                             OrderListSerializer, 
                             OrderCreateSerializer,
@@ -83,6 +83,7 @@ class PaymentCheckoutView(APIView):
 
     def post(self, request):
 
+        order_id = self.request.data.get("id")
         email = self.request.user.email
         amount = self.request.data.get("amount", 0)
         link = "https://api.paystack.co/transaction/initialize"
@@ -90,9 +91,17 @@ class PaymentCheckoutView(APIView):
         headers = {'Content-Type': 'application/json',
                     'Authorization' : 'Bearer ' + paystack_key}
         data = {"email": email, "amount": amount}
-        print("\n\n", email, amount, "\n\n")
+
         resp = requests.post(link, headers = headers, json=data)
-        print("\n\n", resp)
+
+        PaymentHistory.objects.create(
+            the_order = Order.objects.get(pk=order_id),
+            customer  = self.request.user,
+            authorization_url= resp.json()['data']['authorization_url'],
+            access_code = resp.json()['data']['access_code'],
+            reference = resp.json()['data']['reference'],
+        )
+
         return Response({'response': "Updated Successfully",
                         'data' : resp.json()
         })

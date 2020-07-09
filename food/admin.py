@@ -7,7 +7,7 @@ class DishAdmin(admin.ModelAdmin):
                     'dish_type', 'date_available', 'tag']
 
 class OrderAdmin(admin.ModelAdmin):
-    list_display = ['customer_name', 'dish', 'time_of_order', 
+    list_display = ["id", 'customer_name', 'dish', 'time_of_order', 
                     'updated', 'address', 'qty', 'total_cost']
 
 class PaymentAdmin(admin.ModelAdmin):
