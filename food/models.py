@@ -33,6 +33,12 @@ class Dish(models.Model):
 
 
 class Order(models.Model):
+
+    ORDER_CHOICES = [
+    ('Pending', 'Pending'),
+    ('Completed', 'Completed'),
+        ]
+
     customer_name      = models.ForeignKey(User, on_delete=models.CASCADE)
     time_of_order      = models.DateTimeField(auto_now_add=True)
     updated            = models.DateTimeField(auto_now=True)
@@ -40,6 +46,7 @@ class Order(models.Model):
     dish               = models.ForeignKey('Dish', on_delete=models.CASCADE)
     qty                = models.IntegerField()
     total_cost         = models.IntegerField()
+    payment_status     = models.CharField(max_length=15, choices=ORDER_CHOICES)
 
     objects = FoodManager()
 

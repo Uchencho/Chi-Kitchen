@@ -20,6 +20,7 @@ class OrderListSerializer(serializers.ModelSerializer):
             'updated', 
             'address', 
             'total_cost',
+            'payment_status'
         ]
 
     def get_customer_name(self, obj):
@@ -46,7 +47,9 @@ class OrderCreateSerializer(serializers.ModelSerializer):
             'address',
             'qty', 
             'total_cost',
+            'payment_status'
         ]
+        read_only_fields = ['payment_status']
 
     def get_customer_name(self, obj):
         context = self.context['request']
@@ -104,7 +107,8 @@ class OrderCreateSerializer(serializers.ModelSerializer):
             address = validated_data.get('address'),
             dish = dish_model,
             qty = validated_data.get('qty'),
-            total_cost = validated_data.get('total_cost')
+            total_cost = validated_data.get('total_cost'),
+            payment_status = 'Pending'
         )
         return ord_obj
 
@@ -124,6 +128,7 @@ class OrderDetailSerializer(serializers.ModelSerializer):
             'address',
             'qty', 
             'total_cost',
+            'payment_status',
         ]
 
     def get_customer_name(self, obj):
