@@ -81,6 +81,10 @@ class OrderEntry(models.Model):
 
     objects = FoodManager()
 
+    class Meta:
+        verbose_name = 'Order Entry'
+        verbose_name_plural = 'Order Entries'
+
 
 
 class PaymentHistory(models.Model):
@@ -113,7 +117,7 @@ class PaymentHistory(models.Model):
 
 
 
-class Order(models.Model):
+class OrderInfo(models.Model):
     """
     Stores orders details that payment has been confirmed
     """
@@ -126,12 +130,15 @@ class Order(models.Model):
     dish               = models.ForeignKey('Dish', on_delete=models.CASCADE)
     qty                = models.IntegerField()
     total_cost         = models.IntegerField()
-    payment_ref        = models.CharField(max_length=50)
 
     objects = FoodManager()
 
     def __str__(self):
         return str(self.dish.name)
+
+    class Meta:
+        verbose_name = 'Order Information'
+        verbose_name_plural = 'Order Information'
 
 
 
