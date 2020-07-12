@@ -10,6 +10,9 @@ class FoodManager(models.Manager):
         return FoodQuerySet(self.model, using=self._db)
 
 class Dish(models.Model):
+    """
+    Stores list of available dish
+    """
 
     DISH_CHOICES = [
     ('Breakfast', 'Breakfast'),
@@ -31,22 +34,25 @@ class Dish(models.Model):
     def __str__(self):
         return self.name
 
+    
+    class Meta:
+        verbose_name = 'Dish'
+        verbose_name_plural = 'Dishes'
 
-class Order(models.Model):
 
-    ORDER_CHOICES = [
-    ('Pending', 'Pending'),
-    ('Completed', 'Completed'),
-        ]
+class Cart(models.Model):
+    """
+    Stores orders that payment has NOT been received
+    """
 
     customer_name      = models.ForeignKey(User, on_delete=models.CASCADE)
     time_of_order      = models.DateTimeField(auto_now_add=True)
     updated            = models.DateTimeField(auto_now=True)
+    delivery_date      = models.DateTimeField()
     address            = models.TextField()
     dish               = models.ForeignKey('Dish', on_delete=models.CASCADE)
     qty                = models.IntegerField()
     total_cost         = models.IntegerField()
-    payment_status     = models.CharField(max_length=15, choices=ORDER_CHOICES)
 
     objects = FoodManager()
 
@@ -56,6 +62,9 @@ class Order(models.Model):
 
 
 class PaymentHistory(models.Model):
+    """
+    Stores payment history of each order
+    """
 
     PAYMENT_CHOICES = [
     ('Success', 'Success'),
@@ -63,7 +72,6 @@ class PaymentHistory(models.Model):
     ('Pending', 'Pending'),
         ]
 
-    the_order          = models.OneToOneField(Order, on_delete=models.CASCADE)
     customer           = models.ForeignKey(User, on_delete=models.CASCADE)
     amount_paid        = models.IntegerField()
     status             = models.CharField(max_length=20, choices=PAYMENT_CHOICES, default='Pending')
@@ -79,3 +87,46 @@ class PaymentHistory(models.Model):
     class Meta:
         verbose_name = 'Paymnet History'
         verbose_name_plural = 'Payment History'
+
+
+
+class Order(models.Model):
+    """
+    Stores orders that payment has been confirmed
+    """
+
+    customer_name      = models.ForeignKey(User, on_delete=models.CASCADE)
+    time_of_order      = models.DateTimeField(auto_now_add=True)
+    delivery_date      = models.DateTimeField()
+    address            = models.TextField()
+    dish               = models.ForeignKey('Dish', on_delete=models.CASCADE)
+    qty                = models.IntegerField()
+    total_cost         = models.IntegerField()
+    payment_ref        = models.CharField(max_length=50)
+
+    objects = FoodManager()
+
+    def __str__(self):
+        return str(self.dish.name)
+
+
+
+# Flow has changed, only logged in users can order
+# User selects list of dishes he wishes to purchase
+# This list is sent to a cart for user to make payment.
+# Cart is a table that stores list of orders unpaid for
+# When user is ready to pay, items in cart are summend up for payment
+# On confirmation of payment, each of those dishes are stored in order table
+# an order table for admin to provide service
+
+# payment history table needs to show which orders a user paid for
+# Do we create an order on confirmation of payment or on payment
+# Once an order is paid for, no refund is possible
+
+# What will be the callback url? Homepage? How will it work
+
+# Response will contain list of orders that payment has been initialized
+# with response from paystack
+# After payment, user will return to previous tab (no callback)
+# Click on verify payment and then we will create the orders if
+# payment was successful, also delete the orders from cart 
