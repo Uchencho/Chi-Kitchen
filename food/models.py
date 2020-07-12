@@ -48,7 +48,7 @@ class Cart(models.Model):
     customer_name      = models.ForeignKey(User, on_delete=models.CASCADE)
     time_of_order      = models.DateTimeField(auto_now_add=True)
     updated            = models.DateTimeField(auto_now=True)
-    delivery_date      = models.DateTimeField()
+    delivery_date      = models.DateField()
     address            = models.TextField()
     dish               = models.ForeignKey('Dish', on_delete=models.CASCADE)
     qty                = models.IntegerField()
@@ -97,7 +97,7 @@ class Order(models.Model):
 
     customer_name      = models.ForeignKey(User, on_delete=models.CASCADE)
     time_of_order      = models.DateTimeField(auto_now_add=True)
-    delivery_date      = models.DateTimeField()
+    delivery_date      = models.DateField()
     address            = models.TextField()
     dish               = models.ForeignKey('Dish', on_delete=models.CASCADE)
     qty                = models.IntegerField()
