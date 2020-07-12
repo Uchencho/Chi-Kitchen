@@ -60,6 +60,28 @@ class Cart(models.Model):
         return str(self.dish.name)
 
 
+class OrderEntry(models.Model):
+    """
+    Stores orders' entry, not details. The bridge between order info
+    and payment history
+    """
+
+    ORDER_STATUS = [
+    ('Success', 'Success'),
+    ('Failed', 'Failed'),
+    ('Pending', 'Pending'),
+        ]
+
+    customer_name      = models.ForeignKey(User, on_delete=models.CASCADE)
+    status             = models.CharField(max_length=20, choices=ORDER_STATUS, default='Pending')
+    time_of_order      = models.DateTimeField(auto_now_add=True)
+    dish               = models.TextField(help_text='List of dishes')
+    total_cost         = models.IntegerField()
+    payment_ref        = models.CharField(max_length=50)
+
+    objects = FoodManager()
+
+
 
 class PaymentHistory(models.Model):
     """
@@ -72,6 +94,7 @@ class PaymentHistory(models.Model):
     ('Pending', 'Pending'),
         ]
 
+    order_info         = models.ForeignKey(OrderEntry, on_delete=models.CASCADE)
     customer           = models.ForeignKey(User, on_delete=models.CASCADE)
     amount_paid        = models.IntegerField()
     status             = models.CharField(max_length=20, choices=PAYMENT_CHOICES, default='Pending')
@@ -92,9 +115,10 @@ class PaymentHistory(models.Model):
 
 class Order(models.Model):
     """
-    Stores orders that payment has been confirmed
+    Stores orders details that payment has been confirmed
     """
 
+    order_info         = models.ForeignKey(OrderEntry, on_delete=models.CASCADE)
     customer_name      = models.ForeignKey(User, on_delete=models.CASCADE)
     time_of_order      = models.DateTimeField(auto_now_add=True)
     delivery_date      = models.DateField()
@@ -115,18 +139,25 @@ class Order(models.Model):
 # User selects list of dishes he wishes to purchase
 # This list is sent to a cart for user to make payment.
 # Cart is a table that stores list of orders unpaid for
-# When user is ready to pay, items in cart are summend up for payment
-# On confirmation of payment, each of those dishes are stored in order table
-# an order table for admin to provide service
+# When user is ready to pay: 
+    # items in cart are summend up for payment
+    # Here we create an order entry, create orders list and one payment entry
+    # items are deleted from cart
+# On confirmation of payment, set status to successful
 
-# payment history table needs to show which orders a user paid for
-# Do we create an order on confirmation of payment or on payment
-# Once an order is paid for, no refund is possible
 
-# What will be the callback url? Homepage? How will it work
+# Callback url will be handled by client
+# Create a verify payment view that takes in ref id
+# This view will determine if a user will initiate another payment
 
-# Response will contain list of orders that payment has been initialized
-# with response from paystack
-# After payment, user will return to previous tab (no callback)
-# Click on verify payment and then we will create the orders if
-# payment was successful, also delete the orders from cart 
+# How to handle try again?
+
+# Order ID and Order Info
+# Order ID is tied to Order Info and Order ID is tied to payment
+
+
+# Back office
+# To see which orders to dispatch on a specific day
+# Query orderEntry table, filtering all successful transcations
+# Use that to do a join on orders table, further filtering delivery date
+# Hence you have successful transactions on a given day
