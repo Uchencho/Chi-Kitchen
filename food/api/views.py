@@ -4,7 +4,7 @@ from rest_framework.response import Response
 import requests
 
 from kitchen.settings import paystack_key
-from food.models import Dish, Order, PaymentHistory
+from food.models import Dish, OrderInfo, PaymentHistory
 from .serializers import (
                             OrderListSerializer, 
                             OrderCreateSerializer,
@@ -24,7 +24,7 @@ class UserOrdersView(generics.ListAPIView):
         Filter results to return only user's Orders
         """
         the_user = self.request.user
-        return Order.objects.filter(customer_name=the_user)
+        return OrderInfo.objects.filter(customer_name=the_user)
 
 
 class CreateOrderView(generics.CreateAPIView):
@@ -41,7 +41,7 @@ class CreateOrderView(generics.CreateAPIView):
         Filter results to return only user's Orders
         """
         the_user = self.request.user
-        return Order.objects.filter(customer_name=the_user)
+        return OrderInfo.objects.filter(customer_name=the_user)
 
 
 class OrderDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
@@ -53,7 +53,7 @@ class OrderDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
         Filter results to return only user's Orders
         """
         the_user = self.request.user
-        return Order.objects.filter(customer_name=the_user)
+        return OrderInfo.objects.filter(customer_name=the_user)
 
     def perform_update(self, serializer):
         dish_inp = serializer.validated_data.get('dish')

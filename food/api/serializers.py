@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from food.models import Order, Dish
+from food.models import OrderInfo, Dish
 
 class OrderListSerializer(serializers.ModelSerializer):
     customer_name     = serializers.SerializerMethodField(read_only=True)
@@ -9,7 +9,7 @@ class OrderListSerializer(serializers.ModelSerializer):
     dish_cost         = serializers.IntegerField(source='dish.price', read_only=True)
 
     class Meta:
-        model = Order
+        model = OrderInfo
         fields = [
             "id",
             'customer_name',
@@ -37,7 +37,7 @@ class OrderCreateSerializer(serializers.ModelSerializer):
     dish              = serializers.CharField()
 
     class Meta:
-        model = Order
+        model = OrderInfo
         fields = [
             "id",
             'customer_name',
@@ -102,7 +102,7 @@ class OrderCreateSerializer(serializers.ModelSerializer):
     #     )
     # ])
 
-        ord_obj = Order.objects.create(
+        ord_obj = OrderInfo.objects.create(
             customer_name = cus_,
             address = validated_data.get('address'),
             dish = dish_model,
@@ -118,7 +118,7 @@ class OrderDetailSerializer(serializers.ModelSerializer):
     dish              = serializers.CharField()
 
     class Meta:
-        model = Order
+        model = OrderInfo
         fields = [
             "id",
             'customer_name',
