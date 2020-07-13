@@ -29,7 +29,7 @@ class UserCartView(generics.ListAPIView):
 
 class CreateOrderView(generics.CreateAPIView):
     """
-    Create an order
+    Adds items to cart for payment
     """
     serializer_class    = OrderCreateSerializer
 
@@ -41,7 +41,7 @@ class CreateOrderView(generics.CreateAPIView):
         Filter results to return only user's Orders
         """
         the_user = self.request.user
-        return OrderInfo.objects.filter(customer_name=the_user)
+        return Cart.objects.filter(customer_name=the_user)
 
 
 class OrderDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
