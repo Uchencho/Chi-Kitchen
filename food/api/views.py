@@ -4,17 +4,17 @@ from rest_framework.response import Response
 import requests
 
 from kitchen.settings import paystack_key
-from food.models import Dish, OrderInfo, PaymentHistory
-from .serializers import (
+from food.models import Dish, OrderInfo, PaymentHistory, Cart
+from .serializers import (  CarListSerializer,
                             OrderListSerializer, 
                             OrderCreateSerializer,
                             OrderDetailSerializer)
 
-class UserOrdersView(generics.ListAPIView):
+class UserCartView(generics.ListAPIView):
     """
-    List all the orders of a specific user
+    List all the items in cart for a specific user
     """
-    serializer_class    = OrderListSerializer
+    serializer_class    = CarListSerializer
 
     def get_serializer_context(self, *args, **kwargs):
         return {"request":self.request}
@@ -24,7 +24,7 @@ class UserOrdersView(generics.ListAPIView):
         Filter results to return only user's Orders
         """
         the_user = self.request.user
-        return OrderInfo.objects.filter(customer_name=the_user)
+        return Cart.objects.filter(customer_name=the_user)
 
 
 class CreateOrderView(generics.CreateAPIView):

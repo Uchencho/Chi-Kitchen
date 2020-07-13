@@ -1,6 +1,54 @@
 from rest_framework import serializers
 
-from food.models import OrderInfo, Dish
+from food.models import OrderInfo, Dish, Cart
+
+class CarListSerializer(serializers.ModelSerializer):
+    customer_name     = serializers.SerializerMethodField(read_only=True)
+    customer_email    = serializers.SerializerMethodField(read_only=True)
+    dish              = serializers.CharField(source='dish.name', read_only=True)
+    dish_cost         = serializers.IntegerField(source='dish.price', read_only=True)
+
+    class Meta:
+        model = Cart
+        fields = [
+            'id', 
+            'customer_name',
+            'customer_email', 
+            'dish',
+            'dish_cost',
+            'time_of_order', 
+            'updated', 
+            'delivery_date',
+            'address', 
+            'qty', 
+            'total_cost'
+        ]
+
+    def get_customer_name(self, obj):
+        context = self.context['request']
+        return context.user.username
+
+    def get_customer_email(self, obj):
+        context = self.context['request']
+        return context.user.email
+
+    def create(self, validated_data):
+        """
+        Overwrites the create method because of foreign key issues
+        """
+        context = self.context['request']
+        cus_ = context.user
+        dish_model = Dish.objects.filter(name__iexact=validated_data.get('dish')).first()
+
+        cart_obj = Cart.objects.create(
+            customer_name = cus_,
+            address = validated_data.get('address'),
+            dish = dish_model,
+            qty = validated_data.get('qty'),
+            total_cost = validated_data.get('total_cost'),
+            delivery_date = validated_data.get('delivery_date')
+        )
+        return cart_obj
 
 class OrderListSerializer(serializers.ModelSerializer):
     customer_name     = serializers.SerializerMethodField(read_only=True)
