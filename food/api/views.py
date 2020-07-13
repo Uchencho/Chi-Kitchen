@@ -4,17 +4,22 @@ from rest_framework.response import Response
 import requests
 
 from kitchen.settings import paystack_key
-from food.models import Dish, OrderInfo, PaymentHistory
-from .serializers import (
+from food.models import (Dish, 
+                         OrderInfo, 
+                         PaymentHistory, 
+                         Cart, 
+                         OrderEntry)
+
+from .serializers import (  CarListSerializer,
                             OrderListSerializer, 
                             OrderCreateSerializer,
                             OrderDetailSerializer)
 
-class UserOrdersView(generics.ListAPIView):
+class UserCartView(generics.ListAPIView):
     """
-    List all the orders of a specific user
+    List all the items in cart for a specific user
     """
-    serializer_class    = OrderListSerializer
+    serializer_class    = CarListSerializer
 
     def get_serializer_context(self, *args, **kwargs):
         return {"request":self.request}
@@ -24,12 +29,12 @@ class UserOrdersView(generics.ListAPIView):
         Filter results to return only user's Orders
         """
         the_user = self.request.user
-        return OrderInfo.objects.filter(customer_name=the_user)
+        return Cart.objects.filter(customer_name=the_user)
 
 
 class CreateOrderView(generics.CreateAPIView):
     """
-    Create an order
+    Adds items to cart for payment
     """
     serializer_class    = OrderCreateSerializer
 
@@ -41,7 +46,7 @@ class CreateOrderView(generics.CreateAPIView):
         Filter results to return only user's Orders
         """
         the_user = self.request.user
-        return OrderInfo.objects.filter(customer_name=the_user)
+        return Cart.objects.filter(customer_name=the_user)
 
 
 class OrderDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
@@ -81,27 +86,51 @@ class OrderDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
 
 class PaymentCheckoutView(APIView):
 
+    # Sum up total cost of items for checkout
+    # Do a post request to paystack
+    # Create order entries, info and details, two tables
+    # Create payment history entry
+    # Delete orders from cart
+    
+
     def post(self, request):
 
-        order_id = self.request.data.get("id")
         email = self.request.user.email
-        amount = self.request.data.get("amount", 0)
+        amount = sum([line['total_cost'] for line in self.request.data])
         link = "https://api.paystack.co/transaction/initialize"
+        
 
         headers = {'Content-Type': 'application/json',
                     'Authorization' : 'Bearer ' + paystack_key}
-        data = {"email": email, "amount": amount}
+        data = {"email": email, "amount": amount * 100}
 
         resp = requests.post(link, headers = headers, json=data)
 
+        # First validate the response came back with 200
+        if resp.status_code != 200:
+            return Response({'Error': "Paystack error"}, 
+                            status=status.HTTP_503_SERVICE_UNAVAILABLE)
+
+        # Create order entry, not details
+        order_obj = OrderEntry.objects.create(
+            customer_name = self.request.user,
+            dish = ", ".join([line['dish'] for line in self.request.data]),
+            total_cost = amount,
+            payment_ref = resp.json()['data']['reference']
+            )
+
         PaymentHistory.objects.create(
-            the_order = Order.objects.get(pk=order_id),
+            order_info = order_obj,
             customer  = self.request.user,
-            amount_paid = int(amount) / 100,
+            amount_paid = amount,
             authorization_url= resp.json()['data']['authorization_url'],
             access_code = resp.json()['data']['access_code'],
             reference = resp.json()['data']['reference'],
         )
+
+        # For loop to create order information
+
+        # Delete orders from cart
 
         return Response({'response': "Updated Successfully",
                         'data' : resp.json()})
