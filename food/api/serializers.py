@@ -2,6 +2,19 @@ from rest_framework import serializers
 
 from food.models import OrderInfo, Dish, Cart
 
+class DishListSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Dish
+        fields = [
+            'id', 
+            'name', 
+            'price',  
+            'dish_type', 
+            'date_available', 
+            'tag'
+        ]
+
 class CarListSerializer(serializers.ModelSerializer):
     customer_name     = serializers.SerializerMethodField(read_only=True)
     customer_email    = serializers.SerializerMethodField(read_only=True)
@@ -63,12 +76,15 @@ class OrderListSerializer(serializers.ModelSerializer):
 
 
 class OrderCreateSerializer(serializers.ModelSerializer):
+    """
+    Add items to cart for payment
+    """
     customer_name     = serializers.SerializerMethodField(read_only=True)
     dish              = serializers.CharField()
     total_cost        = serializers.CharField(read_only=True)
 
     class Meta:
-        model = OrderInfo
+        model = Cart
         fields = [
             'id', 
             'customer_name', 
@@ -82,42 +98,6 @@ class OrderCreateSerializer(serializers.ModelSerializer):
     def get_customer_name(self, obj):
         context = self.context['request']
         return context.user.username
-
-    def validate_dish(self, value):
-        qs = Dish.objects.filter(name__iexact=value)
-        if not qs.exists():
-            raise serializers.ValidationError("Dish does not exist. Kindly create first.")
-        return value
-
-    def validate(self, data):
-        """
-        Validates that the Delivery date is inline with dish availability
-        """
-        dish_name = data.get("dish")
-        delivery_date = data.get("delivery_date")
-        qs = Dish.objects.filter(name__iexact=dish_name, date_available=delivery_date)
-
-        if not qs.exists():
-            raise serializers.ValidationError({"Delivery Date" : f"{dish_name} is not availabele on {delivery_date}"})
-        return data
-
-    def create(self, validated_data):
-        """
-        Overwrites the create method because of foreign key issues
-        """
-        context = self.context['request']
-        cus_ = context.user
-        dish_model = Dish.objects.filter(name__iexact=validated_data.get('dish')).first()
-
-        cart_obj = Cart.objects.create(
-            customer_name = cus_,
-            address = validated_data.get('address'),
-            dish = dish_model,
-            qty = validated_data.get('qty'),
-            total_cost = dish_model.price * validated_data.get('qty'),
-            delivery_date = validated_data.get('delivery_date')
-        )
-        return cart_obj
 
 
 
@@ -163,3 +143,19 @@ class OrderDetailSerializer(serializers.ModelSerializer):
         elif total_cost < (dish_model.price * qty):
             raise serializers.ValidationError({"Total Cost" : "Total cost cannot be less than unit cost multiplied by qty"})
         return data
+
+
+
+# [{
+#     "dish": "Pounded Yam and Egusi Soup",
+#     "delivery_date": "2020-07-14",
+#     "address": "Lagos",
+#     "qty": 3
+# },
+
+# {
+#     "dish": "Pounded Yam and Egusi Soup",
+#     "delivery_date": "2020-07-14",
+#     "address": "Abuja",
+#     "qty": 7
+# }]
