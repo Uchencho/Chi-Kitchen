@@ -66,18 +66,12 @@ class OrderEntry(models.Model):
     and payment history
     """
 
-    ORDER_STATUS = [
-    ('Success', 'Success'),
-    ('Failed', 'Failed'),
-    ('Pending', 'Pending'),
-        ]
-
     customer_name      = models.ForeignKey(User, on_delete=models.CASCADE)
-    status             = models.CharField(max_length=20, choices=ORDER_STATUS, default='Pending')
+    status             = models.CharField(max_length=20, default='Pending')
     time_of_order      = models.DateTimeField(auto_now_add=True)
     dish               = models.TextField(help_text='List of dishes')
     total_cost         = models.IntegerField()
-    payment_ref        = models.CharField(max_length=50)
+    payment_ref        = models.CharField(max_length=50, unique=True)
 
     objects = FoodManager()
 
@@ -92,19 +86,13 @@ class PaymentHistory(models.Model):
     Stores payment history of each order
     """
 
-    PAYMENT_CHOICES = [
-    ('Success', 'Success'),
-    ('Failed', 'Failed'),
-    ('Pending', 'Pending'),
-        ]
-
     order_info         = models.ForeignKey(OrderEntry, on_delete=models.CASCADE)
     customer           = models.ForeignKey(User, on_delete=models.CASCADE)
     amount_paid        = models.IntegerField()
-    status             = models.CharField(max_length=20, choices=PAYMENT_CHOICES, default='Pending')
-    authorization_url  = models.URLField(blank=True, null=True)
-    access_code        = models.CharField(max_length=200, blank=True, null=True)
-    reference          = models.CharField(max_length=200, blank=True, null=True)
+    status             = models.CharField(max_length=20, default='Pending')
+    authorization_url  = models.URLField()
+    access_code        = models.CharField(max_length=200)
+    reference          = models.CharField(max_length=200, unique=True)
     payment_channel    = models.CharField(max_length=200, blank=True, null=True)
     transaction_date   = models.CharField(max_length=200, blank=True, null=True)
     verify_status      = models.CharField(max_length=200, blank=True, null=True)

@@ -1,5 +1,6 @@
 from .views import (UserCartView,
                     DishView,
+                    VerifyPaymentView,
                     # UserOrdersView, 
                     CreateOrderView,
                     OrderDetailAPIView,
@@ -14,5 +15,6 @@ urlpatterns = [
     # path('myorders/', UserOrdersView.as_view(), name='orders'),
     path('myorders/create/', CreateOrderView.as_view(), name='orders'),
     path('myorders/<int:pk>/', OrderDetailAPIView.as_view(), name='editorder'),
-    path('myorders/checkout/', PaymentCheckoutView.as_view(), name='checkout')
+    path('myorders/checkout/', PaymentCheckoutView.as_view(), name='checkout'),
+    path('myorders/verify/', VerifyPaymentView.as_view(), name='verify')
 ]

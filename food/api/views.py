@@ -153,14 +153,6 @@ class OrderDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
 
 
 class PaymentCheckoutView(APIView):
-
-    # Sum up total cost of items for checkout
-    # Do a post request to paystack
-    # Create order entries, info and details, two tables
-    # Create payment history entry
-    # Delete orders from cart
-    
-
     def post(self, request):
 
         cus_ = request.user
@@ -215,22 +207,22 @@ class PaymentCheckoutView(APIView):
                 total_cost = dish_mod.price * data_[0].get('qty'),
                 delivery_date = data_[0].get('delivery_date')
             )
+        else:
+            final_list = []
+            for item in data_:
+                dish_model = Dish.objects.filter(name__iexact=item.get('dish')).first()
 
-        final_list = []
-        for item in data_:
-            dish_model = Dish.objects.filter(name__iexact=item.get('dish')).first()
-
-            cart_obj = OrderInfo(
-                order_info = order_obj,
-                customer_name = cus_,
-                address = item.get('address'),
-                dish = dish_model,
-                qty = item.get('qty'),
-                total_cost = dish_model.price * item.get('qty'),
-                delivery_date = item.get('delivery_date')
-            )
-            final_list.append(cart_obj)
-        OrderInfo.objects.bulk_create(final_list)
+                cart_obj = OrderInfo(
+                    order_info = order_obj,
+                    customer_name = cus_,
+                    address = item.get('address'),
+                    dish = dish_model,
+                    qty = item.get('qty'),
+                    total_cost = dish_model.price * item.get('qty'),
+                    delivery_date = item.get('delivery_date')
+                )
+                final_list.append(cart_obj)
+            OrderInfo.objects.bulk_create(final_list)
 
         # Delete orders from cart
         for item in data_:
@@ -238,3 +230,37 @@ class PaymentCheckoutView(APIView):
 
         return Response({'response': "Updated Successfully",
                         'data' : resp.json()})
+
+
+class VerifyPaymentView(APIView):
+    def post(self, request):
+        ref = request.data.get("reference")
+        link = "https://api.paystack.co/transaction/verify/" + ref
+        print("\n\n", link)
+        headers = {'Content-Type': 'application/json',
+                    'Authorization' : 'Bearer ' + paystack_key}
+
+        resp = requests.get(link, headers=headers)
+
+        if resp.status_code != 200:
+            return Response({'Error': "Paystack error",
+                            "status_code": resp.status_code}, 
+                            status=status.HTTP_503_SERVICE_UNAVAILABLE)
+        
+        # If response returns a success, update the payment history
+        # Update the OrderEntry table
+
+        status_message = resp.json()['data']['status']
+        qs = OrderEntry.objects.filter(payment_ref__iexact=ref)
+        if not qs.exists():
+            return Response({'message' : 'Order with payment ref does not exist'}, 
+                                status=status.HTTP_400_BAD_REQUEST)
+        qs.update(status=status_message)
+
+        qs = PaymentHistory.objects.filter(reference__iexact=ref)
+        if not qs.exists():
+            return Response({'message' : 'Payment History with payment ref does not exist'}, 
+                                status=status.HTTP_400_BAD_REQUEST)
+        qs.update(status=status_message)
+
+        return Response({'response': status_message}, status=status.HTTP_200_OK)
