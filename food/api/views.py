@@ -41,12 +41,78 @@ class CreateOrderView(generics.CreateAPIView):
     def get_serializer_context(self, *args, **kwargs):
         return {"request":self.request}
 
+    def get_serializer(self, *args, **kwargs):
+        if isinstance(kwargs.get("data", {}), list):
+            kwargs["many"] = True
+
+        return super(CreateOrderView, self).get_serializer(*args, **kwargs)
+
     def get_queryset(self):
         """
         Filter results to return only user's Orders
         """
         the_user = self.request.user
         return Cart.objects.filter(customer_name=the_user)
+
+    def check_data(self, data):
+        """
+        Validates that the Delivery date is inline with dish availability
+        """
+        dish_list = [line['dish'] for line in data]
+        delivery_list = [line['delivery_date'] for line in data]
+
+        for dl, dv_l in zip(dish_list, delivery_list):
+            qs = Dish.objects.filter(name__iexact=dl, date_available=dv_l)
+            if not qs.exists():
+                return False, f"{dl} is not available on {dv_l}"
+
+        return True, "Success"
+
+
+    def post(self, request):
+        """
+        Overwrites the create method because of foreign key issues
+        """
+
+        data_ = request.data
+        if type(data_) != list:
+            data_ = [data_]
+
+        if not self.check_data(data_)[0]:
+            return Response({
+            'message' : self.check_data(data_)[1]}, status=status.HTTP_400_BAD_REQUEST)
+    
+        cus_ = request.user
+
+        if len(data_) == 1:
+            dish_mod = Dish.objects.filter(name__iexact=data_[0].get('dish')).first()
+            Cart.objects.create(
+                customer_name = cus_,
+                address = data_[0].get('address'),
+                dish = dish_mod,
+                qty = data_[0].get('qty'),
+                total_cost = dish_mod.price * data_[0].get('qty'),
+                delivery_date = data_[0].get('delivery_date')
+            )
+            return Response({'message' : 'Created successfully'}, 
+                                status=status.HTTP_201_CREATED)
+
+        final_list = []
+        for item in data_:
+            dish_model = Dish.objects.filter(name__iexact=item.get('dish')).first()
+
+            cart_obj = Cart(
+                customer_name = cus_,
+                address = item.get('address'),
+                dish = dish_model,
+                qty = item.get('qty'),
+                total_cost = dish_model.price * item.get('qty'),
+                delivery_date = item.get('delivery_date')
+            )
+            final_list.append(cart_obj)
+        Cart.objects.bulk_create(final_list)
+        return Response({
+            'message' : 'Created successfully'}, status=status.HTTP_201_CREATED)
 
 
 class OrderDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
