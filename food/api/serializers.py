@@ -2,6 +2,19 @@ from rest_framework import serializers
 
 from food.models import OrderInfo, Dish, Cart
 
+class DishListSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Dish
+        fields = [
+            'id', 
+            'name', 
+            'price',  
+            'dish_type', 
+            'date_available', 
+            'tag'
+        ]
+
 class CarListSerializer(serializers.ModelSerializer):
     customer_name     = serializers.SerializerMethodField(read_only=True)
     customer_email    = serializers.SerializerMethodField(read_only=True)

@@ -2,6 +2,7 @@ from rest_framework import generics, status, permissions
 from rest_framework.views import APIView
 from rest_framework.response import Response
 import requests
+from django.utils import timezone
 
 from kitchen.settings import paystack_key
 from food.models import (Dish, 
@@ -10,10 +11,20 @@ from food.models import (Dish,
                          Cart, 
                          OrderEntry)
 
-from .serializers import (  CarListSerializer,
+from .serializers import (  DishListSerializer,
+                            CarListSerializer,
                             OrderListSerializer, 
                             OrderCreateSerializer,
                             OrderDetailSerializer)
+
+
+class DishView(generics.ListAPIView):
+    """
+    List all the items in cart for a specific user
+    """
+    queryset            = Dish.objects.filter(active=True, date_available__gte=timezone.now().date())
+    serializer_class    = DishListSerializer
+
 
 class UserCartView(generics.ListAPIView):
     """
