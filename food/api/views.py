@@ -49,15 +49,6 @@ class CreateOrderView(generics.CreateAPIView):
     """
     serializer_class    = OrderCreateSerializer
 
-    def get_serializer_context(self, *args, **kwargs):
-        return {"request":self.request}
-
-    def get_serializer(self, *args, **kwargs):
-        if isinstance(kwargs.get("data", {}), list):
-            kwargs["many"] = True
-
-        return super(CreateOrderView, self).get_serializer(*args, **kwargs)
-
     def get_queryset(self):
         """
         Filter results to return only user's Orders
@@ -172,8 +163,15 @@ class PaymentCheckoutView(APIView):
 
     def post(self, request):
 
+        cus_ = request.user
+
+        # Expecting a list as data
+        data_ = request.data
+        if type(data_) != list:
+            data_ = [data_]
+
         email = self.request.user.email
-        amount = sum([line['total_cost'] for line in self.request.data])
+        amount = sum([line['total_cost'] for line in data_])
         link = "https://api.paystack.co/transaction/initialize"
         
 
@@ -206,8 +204,37 @@ class PaymentCheckoutView(APIView):
         )
 
         # For loop to create order information
+        if len(data_) == 1:
+            dish_mod = Dish.objects.filter(name__iexact=data_[0].get('dish')).first()
+            OrderInfo.objects.create(
+                order_info = order_obj,
+                customer_name = cus_,
+                address = data_[0].get('address'),
+                dish = dish_mod,
+                qty = data_[0].get('qty'),
+                total_cost = dish_mod.price * data_[0].get('qty'),
+                delivery_date = data_[0].get('delivery_date')
+            )
+
+        final_list = []
+        for item in data_:
+            dish_model = Dish.objects.filter(name__iexact=item.get('dish')).first()
+
+            cart_obj = OrderInfo(
+                order_info = order_obj,
+                customer_name = cus_,
+                address = item.get('address'),
+                dish = dish_model,
+                qty = item.get('qty'),
+                total_cost = dish_model.price * item.get('qty'),
+                delivery_date = item.get('delivery_date')
+            )
+            final_list.append(cart_obj)
+        OrderInfo.objects.bulk_create(final_list)
 
         # Delete orders from cart
+        for item in data_:
+            Cart.objects.filter(id=item['id']).delete()
 
         return Response({'response': "Updated Successfully",
                         'data' : resp.json()})
