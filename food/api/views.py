@@ -13,6 +13,7 @@ from food.models import (Dish,
 
 from .serializers import (  DishListSerializer,
                             CarListSerializer,
+                            OrderEntrySerializer,
                             OrderListSerializer, 
                             OrderCreateSerializer,
                             CartDetailSerializer)
@@ -271,6 +272,30 @@ class VerifyPaymentView(APIView):
                         status=status.HTTP_200_OK)
 
 
+# To avoid overflow of information, two views will be created to address 
+# User seeing items he has already paid for
+class OrderEntryView(generics.ListAPIView):
+    """
+    Lists the overview of orders that have been placed by a user
+    """
+    serializer_class    = OrderEntrySerializer
+
+    def get_serializer_context(self, *args, **kwargs):
+        return {"request":self.request}
+
+    def get_queryset(self):
+        """
+        Filter results to return only user's Orders
+        """
+        the_user = self.request.user
+        return OrderEntry.objects.filter(customer_name=the_user)
+
 # Without a payment atempt, status is abandoned
 # Failed transaction response, status comes back as failed
 # As long as trx in not successful, pay_url will always work
+
+# User wants to see items he has already paid for
+# User wants to retry payment for failed items 
+
+# Need to ensure that when ever payment view is called, we check if 
+# dish is actually available

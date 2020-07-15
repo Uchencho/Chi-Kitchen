@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from food.models import OrderInfo, Dish, Cart
+from food.models import OrderInfo, Dish, Cart, OrderEntry
 
 class DishListSerializer(serializers.ModelSerializer):
 
@@ -138,6 +138,24 @@ class CartDetailSerializer(serializers.ModelSerializer):
         if not qs.exists():
             raise serializers.ValidationError(f"{dish_name} is not available on {dd}.")
         return validated_data
+
+
+class OrderEntrySerializer(serializers.ModelSerializer):
+    customer_name     = serializers.SerializerMethodField(read_only=True)
+    
+    class Meta:
+        model = OrderEntry
+        fields = ['id', 
+                  'customer_name', 
+                  'status', 
+                  'time_of_order',
+                  'dish', 
+                  'total_cost',
+                  'payment_ref']
+
+    def get_customer_name(self, obj):
+        context = self.context['request']
+        return context.user.username
 
 
 # [{
