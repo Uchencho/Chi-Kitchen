@@ -15,7 +15,7 @@ from .serializers import (  DishListSerializer,
                             CarListSerializer,
                             OrderListSerializer, 
                             OrderCreateSerializer,
-                            OrderDetailSerializer)
+                            CartDetailSerializer)
 
 
 class DishView(generics.ListAPIView):
@@ -119,24 +119,25 @@ class CreateOrderView(generics.CreateAPIView):
 
 class OrderDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
                             
-    serializer_class            = OrderDetailSerializer
+    serializer_class            = CartDetailSerializer
 
     def get_queryset(self):
         """
         Filter results to return only user's Orders
         """
         the_user = self.request.user
-        return OrderInfo.objects.filter(customer_name=the_user)
+        return Cart.objects.filter(customer_name=the_user)
 
     def perform_update(self, serializer):
         dish_inp = serializer.validated_data.get('dish')
         qty = serializer.validated_data.get('qty')
         add = serializer.validated_data.get('address')
-        tot = serializer.validated_data.get('total_cost')
+        dda = serializer.validated_data.get('delivery_date')
         dish_obj = Dish.objects.filter(name__iexact=dish_inp).first()
         serializer.save(dish=dish_obj,
+                        delivery_date=dda,
                         qty=qty,
-                        total_cost=tot,
+                        total_cost=dish_obj.price * qty,
                         address=add)
 
     def put(self, request, *args, **kwargs):
