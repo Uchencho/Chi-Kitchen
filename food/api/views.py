@@ -14,6 +14,7 @@ from food.models import (Dish,
 from .serializers import (  DishListSerializer,
                             CarListSerializer,
                             OrderEntrySerializer,
+                            OrderDetailSerializer,
                             OrderListSerializer, 
                             OrderCreateSerializer,
                             CartDetailSerializer)
@@ -118,7 +119,7 @@ class CreateOrderView(generics.CreateAPIView):
             'message' : 'Created successfully'}, status=status.HTTP_201_CREATED)
 
 
-class OrderDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
+class CartDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
                             
     serializer_class            = CartDetailSerializer
 
@@ -289,6 +290,21 @@ class OrderEntryView(generics.ListAPIView):
         """
         the_user = self.request.user
         return OrderEntry.objects.filter(customer_name=the_user)
+
+
+class OrderInfoView(generics.ListAPIView):
+    """
+    Lists the details of orders that have been placed by a user
+    """
+    serializer_class    = OrderDetailSerializer
+
+    def get_queryset(self, *args, **kwargs):
+        """
+        Filter results to return only user's Orders
+        """
+        the_user = self.request.user
+        the_id = self.kwargs.get('pk')
+        return OrderInfo.objects.filter(customer_name=the_user, order_info=the_id)
 
 # Without a payment atempt, status is abandoned
 # Failed transaction response, status comes back as failed

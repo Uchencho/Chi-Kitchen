@@ -142,7 +142,7 @@ class CartDetailSerializer(serializers.ModelSerializer):
 
 class OrderEntrySerializer(serializers.ModelSerializer):
     customer_name     = serializers.SerializerMethodField(read_only=True)
-    
+
     class Meta:
         model = OrderEntry
         fields = ['id', 
@@ -156,6 +156,21 @@ class OrderEntrySerializer(serializers.ModelSerializer):
     def get_customer_name(self, obj):
         context = self.context['request']
         return context.user.username
+
+
+class OrderDetailSerializer(serializers.ModelSerializer):
+    dish            = serializers.CharField(source='dish.name', read_only=True)
+
+    class Meta:
+        model = OrderInfo
+        fields = [
+            'id',  
+            'dish',
+            'delivery_date',
+            'address', 
+            'qty', 
+            'total_cost',
+        ]
 
 
 # [{
