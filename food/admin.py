@@ -7,8 +7,9 @@ class DishAdmin(admin.ModelAdmin):
                     'dish_type', 'date_available', 'tag']
 
 class OrderInfoAdmin(admin.ModelAdmin):
+    list_filter = ('order_info','delivery_date')
     list_display = ['id', 'customer_name', 'dish', 'order_info', 'time_of_order', 
-                     'address', 'qty', 'total_cost']
+                     'delivery_date', 'address', 'qty', 'total_cost']
 
 class PaymentAdmin(admin.ModelAdmin):
     list_display = ['customer', 'amount_paid', 'status', 
@@ -21,6 +22,7 @@ class CartAdmin(admin.ModelAdmin):
                      'qty', 'total_cost']
 
 class OrderEntryAdmin(admin.ModelAdmin):
+    list_filter = ('status', 'time_of_order')
     list_display = ['id', 'customer_name', 'status', 'time_of_order', 
                      'total_cost']
 
