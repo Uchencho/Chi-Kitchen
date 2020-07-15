@@ -15,7 +15,7 @@ from .serializers import (  DishListSerializer,
                             CarListSerializer,
                             OrderListSerializer, 
                             OrderCreateSerializer,
-                            OrderDetailSerializer)
+                            CartDetailSerializer)
 
 
 class DishView(generics.ListAPIView):
@@ -119,24 +119,25 @@ class CreateOrderView(generics.CreateAPIView):
 
 class OrderDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
                             
-    serializer_class            = OrderDetailSerializer
+    serializer_class            = CartDetailSerializer
 
     def get_queryset(self):
         """
         Filter results to return only user's Orders
         """
         the_user = self.request.user
-        return OrderInfo.objects.filter(customer_name=the_user)
+        return Cart.objects.filter(customer_name=the_user)
 
     def perform_update(self, serializer):
         dish_inp = serializer.validated_data.get('dish')
         qty = serializer.validated_data.get('qty')
         add = serializer.validated_data.get('address')
-        tot = serializer.validated_data.get('total_cost')
+        dda = serializer.validated_data.get('delivery_date')
         dish_obj = Dish.objects.filter(name__iexact=dish_inp).first()
         serializer.save(dish=dish_obj,
+                        delivery_date=dda,
                         qty=qty,
-                        total_cost=tot,
+                        total_cost=dish_obj.price * qty,
                         address=add)
 
     def put(self, request, *args, **kwargs):
@@ -153,14 +154,6 @@ class OrderDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
 
 
 class PaymentCheckoutView(APIView):
-
-    # Sum up total cost of items for checkout
-    # Do a post request to paystack
-    # Create order entries, info and details, two tables
-    # Create payment history entry
-    # Delete orders from cart
-    
-
     def post(self, request):
 
         cus_ = request.user
@@ -215,22 +208,22 @@ class PaymentCheckoutView(APIView):
                 total_cost = dish_mod.price * data_[0].get('qty'),
                 delivery_date = data_[0].get('delivery_date')
             )
+        else:
+            final_list = []
+            for item in data_:
+                dish_model = Dish.objects.filter(name__iexact=item.get('dish')).first()
 
-        final_list = []
-        for item in data_:
-            dish_model = Dish.objects.filter(name__iexact=item.get('dish')).first()
-
-            cart_obj = OrderInfo(
-                order_info = order_obj,
-                customer_name = cus_,
-                address = item.get('address'),
-                dish = dish_model,
-                qty = item.get('qty'),
-                total_cost = dish_model.price * item.get('qty'),
-                delivery_date = item.get('delivery_date')
-            )
-            final_list.append(cart_obj)
-        OrderInfo.objects.bulk_create(final_list)
+                cart_obj = OrderInfo(
+                    order_info = order_obj,
+                    customer_name = cus_,
+                    address = item.get('address'),
+                    dish = dish_model,
+                    qty = item.get('qty'),
+                    total_cost = dish_model.price * item.get('qty'),
+                    delivery_date = item.get('delivery_date')
+                )
+                final_list.append(cart_obj)
+            OrderInfo.objects.bulk_create(final_list)
 
         # Delete orders from cart
         for item in data_:
@@ -238,3 +231,46 @@ class PaymentCheckoutView(APIView):
 
         return Response({'response': "Updated Successfully",
                         'data' : resp.json()})
+
+
+class VerifyPaymentView(APIView):
+    def post(self, request):
+        ref = request.data.get("reference")
+        link = "https://api.paystack.co/transaction/verify/" + ref
+        headers = {'Content-Type': 'application/json',
+                    'Authorization' : 'Bearer ' + paystack_key}
+
+        resp = requests.get(link, headers=headers)
+
+        if resp.status_code != 200:
+            return Response({'Error': "Paystack error",
+                            "status_code": resp.status_code}, 
+                            status=status.HTTP_503_SERVICE_UNAVAILABLE)
+        
+        # If response returns a success, update the payment history
+        # Update the OrderEntry table
+
+        status_message = resp.json()['data']['status']
+        qs = OrderEntry.objects.filter(payment_ref__iexact=ref)
+        if not qs.exists():
+            return Response({'message' : 'Order with payment ref does not exist'}, 
+                                status=status.HTTP_400_BAD_REQUEST)
+        qs.update(status=status_message)
+
+        qs = PaymentHistory.objects.filter(reference__iexact=ref)
+        if not qs.exists():
+            return Response({'message' : 'Payment History with payment ref does not exist'}, 
+                                status=status.HTTP_400_BAD_REQUEST)
+        qs.update(status=status_message,
+                payment_channel=resp.json()['data']['channel'],
+                transaction_date=resp.json()['data']['transaction_date'],
+                verify_status=resp.json()['status']
+        )
+
+        return Response({'response': status_message, 'url':qs.first().authorization_url}, 
+                        status=status.HTTP_200_OK)
+
+
+# Without a payment atempt, status is abandoned
+# Failed transaction response, status comes back as failed
+# As long as trx in not successful, pay_url will always work

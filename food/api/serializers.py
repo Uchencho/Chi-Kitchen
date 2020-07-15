@@ -101,22 +101,23 @@ class OrderCreateSerializer(serializers.ModelSerializer):
 
 
 
-class OrderDetailSerializer(serializers.ModelSerializer):
+class CartDetailSerializer(serializers.ModelSerializer):
     customer_name     = serializers.SerializerMethodField(read_only=True)
     dish              = serializers.CharField()
+    total_cost        = serializers.CharField(read_only=True)
 
     class Meta:
-        model = OrderInfo
+        model = Cart
         fields = [
             "id",
             'customer_name',
             'dish',
-            'time_of_order', 
+            'time_of_order',
+            'delivery_date',
             'updated', 
             'address',
             'qty', 
             'total_cost',
-            'payment_status',
         ]
 
     def get_customer_name(self, obj):
@@ -129,21 +130,14 @@ class OrderDetailSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("Dish does not exist. Kindly create first.")
         return value
 
-    def validate(self, data):
-        """
-        Validates that the total price is more than the price of the food
-        """
-        dish_name = data.get("dish")
-        total_cost = data.get("total_cost")
-        qty = data.get("qty")
+    def validate(self, validated_data):
+        dish_name = validated_data.get("dish")
+        dd = validated_data.get("delivery_date")
 
-        dish_model = Dish.objects.filter(name__iexact=dish_name).first()
-        if total_cost < dish_model.price:
-            raise serializers.ValidationError({"Total Cost" : "Total cost cannot be less than cost of dish"})
-        elif total_cost < (dish_model.price * qty):
-            raise serializers.ValidationError({"Total Cost" : "Total cost cannot be less than unit cost multiplied by qty"})
-        return data
-
+        qs = Dish.objects.filter(name__iexact=dish_name, date_available=dd)
+        if not qs.exists():
+            raise serializers.ValidationError(f"{dish_name} is not available on {dd}.")
+        return validated_data
 
 
 # [{
