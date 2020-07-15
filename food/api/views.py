@@ -236,7 +236,6 @@ class VerifyPaymentView(APIView):
     def post(self, request):
         ref = request.data.get("reference")
         link = "https://api.paystack.co/transaction/verify/" + ref
-        print("\n\n", link)
         headers = {'Content-Type': 'application/json',
                     'Authorization' : 'Bearer ' + paystack_key}
 
@@ -261,6 +260,16 @@ class VerifyPaymentView(APIView):
         if not qs.exists():
             return Response({'message' : 'Payment History with payment ref does not exist'}, 
                                 status=status.HTTP_400_BAD_REQUEST)
-        qs.update(status=status_message)
+        qs.update(status=status_message,
+                payment_channel=resp.json()['data']['channel'],
+                transaction_date=resp.json()['data']['transaction_date'],
+                verify_status=resp.json()['status']
+        )
 
-        return Response({'response': status_message}, status=status.HTTP_200_OK)
+        return Response({'response': status_message, 'url':qs.first().authorization_url}, 
+                        status=status.HTTP_200_OK)
+
+
+# Without a payment atempt, status is abandoned
+# Failed transaction response, status comes back as failed
+# As long as trx in not successful, pay_url will always work

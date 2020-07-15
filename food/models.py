@@ -75,6 +75,9 @@ class OrderEntry(models.Model):
 
     objects = FoodManager()
 
+    def __str__(self):
+        return self.status
+
     class Meta:
         verbose_name = 'Order Entry'
         verbose_name_plural = 'Order Entries'
