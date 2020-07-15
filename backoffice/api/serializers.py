@@ -12,25 +12,21 @@ class UserSerializer(serializers.ModelSerializer):
                   'phone_number', 
                 ]
 
-class OrderEntrySerializer(serializers.ModelSerializer):
-    class Meta:
-        model = OrderEntry
-        fields = ['status']
-
 
 class OrderInfoSerializer(serializers.ModelSerializer):
-    customer_name = UserSerializer(read_only=True)
-    order_info = OrderEntrySerializer(read_only=True)
+    customer_name   = UserSerializer(read_only=True)
+    order_info      = serializers.CharField(source='order_info.status', read_only=True)
+    dish            = serializers.CharField(source='dish.name', read_only=True)
 
     class Meta:
         model = OrderInfo
         fields = [
             'id',  
             'dish',
+            'order_info',
             'delivery_date',
             'address', 
             'qty', 
             'total_cost',
             'customer_name',
-            'order_info',
         ]
