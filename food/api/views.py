@@ -164,6 +164,16 @@ class PaymentCheckoutView(APIView):
         data_ = request.data
         if type(data_) != list:
             data_ = [data_]
+        
+        # Check if dish is still available
+        dish_list = [line['dish'] for line in data_]
+        delivery_list = [line['delivery_date'] for line in data_]
+
+        for dl, dv_l in zip(dish_list, delivery_list):
+            qs = Dish.objects.filter(name__iexact=dl, date_available=dv_l)
+            if not qs.exists():
+                return Response({'Error': f"{dl} is no longer available on {dv_l}"}, 
+                            status=status.HTTP_400_BAD_REQUEST)
 
         email = self.request.user.email
         amount = sum([line['total_cost'] for line in data_])
@@ -231,8 +241,7 @@ class PaymentCheckoutView(APIView):
         for item in data_:
             Cart.objects.filter(id=item['id']).delete()
 
-        return Response({'response': "Updated Successfully",
-                        'data' : resp.json()})
+        return Response(resp.json())
 
 
 class VerifyPaymentView(APIView):
@@ -253,11 +262,6 @@ class VerifyPaymentView(APIView):
         # Update the OrderEntry table
 
         status_message = resp.json()['data']['status']
-        qs = OrderEntry.objects.filter(payment_ref__iexact=ref)
-        if not qs.exists():
-            return Response({'message' : 'Order with payment ref does not exist'}, 
-                                status=status.HTTP_400_BAD_REQUEST)
-        qs.update(status=status_message)
 
         qs = PaymentHistory.objects.filter(reference__iexact=ref)
         if not qs.exists():
@@ -268,6 +272,11 @@ class VerifyPaymentView(APIView):
                 transaction_date=resp.json()['data']['transaction_date'],
                 verify_status=resp.json()['status']
         )
+
+        old_ref = qs.first().order_info.payment_ref
+        order_entry_qs = OrderEntry.objects.filter(payment_ref__iexact=old_ref)
+        order_entry_qs.update(status=status_message,
+                              payment_ref = ref)
 
         return Response({'response': status_message, 'url':qs.first().authorization_url}, 
                         status=status.HTTP_200_OK)
@@ -305,6 +314,52 @@ class OrderInfoView(generics.ListAPIView):
         the_user = self.request.user
         the_id = self.kwargs.get('pk')
         return OrderInfo.objects.filter(customer_name=the_user, order_info=the_id)
+
+
+class PaymentRetryView(APIView):
+    def post(self, request):
+
+        cus_ = request.user
+
+        # Expecting a list as data
+        data_ = request.data
+        if type(data_) != list:
+            data_ = [data_]
+
+        # Check if dish is still available 
+        for dl, dv_l in zip(dish_list, delivery_list):
+            qs = Dish.objects.filter(name__iexact=dl, date_available=dv_l)
+            if not qs.exists():
+                return Response({'Error': f"{dl} is no longer available on {dv_l}"}, 
+                            status=status.HTTP_400_BAD_REQUEST)
+
+        order_obj = OrderEntry.objects.get(pk=data_[0].get('order_info'))
+        email = self.request.user.email
+        amount = sum([line['total_cost'] for line in data_])
+        link = "https://api.paystack.co/transaction/initialize"
+        
+
+        headers = {'Content-Type': 'application/json',
+                    'Authorization' : 'Bearer ' + paystack_key}
+        data = {"email": email, "amount": amount * 100}
+
+        resp = requests.post(link, headers = headers, json=data)
+
+        # First validate the response came back with 200
+        if resp.status_code != 200:
+            return Response({'Error': "Paystack error"}, 
+                            status=status.HTTP_503_SERVICE_UNAVAILABLE)
+
+        PaymentHistory.objects.create(
+            order_info = order_obj,
+            customer  = self.request.user,
+            amount_paid = amount,
+            authorization_url= resp.json()['data']['authorization_url'],
+            access_code = resp.json()['data']['access_code'],
+            reference = resp.json()['data']['reference'],
+        )
+
+        return Response(resp.json())
 
 # Without a payment atempt, status is abandoned
 # Failed transaction response, status comes back as failed

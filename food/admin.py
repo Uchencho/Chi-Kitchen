@@ -12,7 +12,7 @@ class OrderInfoAdmin(admin.ModelAdmin):
                      'delivery_date', 'address', 'qty', 'total_cost']
 
 class PaymentAdmin(admin.ModelAdmin):
-    list_display = ['customer', 'amount_paid', 'status', 
+    list_display = ['customer', 'order_info', 'amount_paid', 'status', 
                     'access_code','authorization_url', 'reference', 
                     'payment_channel', 'transaction_date', 'verify_status']
 

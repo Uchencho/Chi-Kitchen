@@ -76,7 +76,7 @@ class OrderEntry(models.Model):
     objects = FoodManager()
 
     def __str__(self):
-        return self.status
+        return str(self.id)
 
     class Meta:
         verbose_name = 'Order Entry'

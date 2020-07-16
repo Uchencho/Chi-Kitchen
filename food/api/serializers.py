@@ -170,6 +170,7 @@ class OrderDetailSerializer(serializers.ModelSerializer):
             'address', 
             'qty', 
             'total_cost',
+            'order_info'
         ]
 
 
