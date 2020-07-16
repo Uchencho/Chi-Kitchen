@@ -326,6 +326,9 @@ class PaymentRetryView(APIView):
         if type(data_) != list:
             data_ = [data_]
 
+        dish_list = [line['dish'] for line in data_]
+        delivery_list = [line['delivery_date'] for line in data_]
+
         # Check if dish is still available 
         for dl, dv_l in zip(dish_list, delivery_list):
             qs = Dish.objects.filter(name__iexact=dl, date_available=dv_l)

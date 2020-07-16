@@ -5,7 +5,8 @@ from .views import (UserCartView,
                     OrderInfoView, 
                     CreateOrderView,
                     CartDetailAPIView,
-                    PaymentCheckoutView)
+                    PaymentCheckoutView,
+                    PaymentRetryView)
 from django.urls import path, include
 
 app_name = "food"
@@ -18,5 +19,6 @@ urlpatterns = [
     path('myorders/', OrderEntryView.as_view(), name='orders'),
     path('myorders/<int:pk>/', OrderInfoView.as_view(), name='orderInfo'),
     path('myorders/checkout/', PaymentCheckoutView.as_view(), name='checkout'),
+    path('myorders/retrypayment/', PaymentRetryView.as_view(), name='retrypayment'),
     path('myorders/verify/', VerifyPaymentView.as_view(), name='verify')
 ]
