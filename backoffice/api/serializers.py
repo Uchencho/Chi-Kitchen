@@ -57,3 +57,18 @@ class RetrieveDishSerializer(serializers.ModelSerializer):
             'date_available', 
             'tag'
         ]
+
+
+class AllPaymentHistorySerializer(serializers.ModelSerializer):
+    order_info      = serializers.CharField(source='order_info.dish', read_only=True)
+    customer      = serializers.CharField(source='customer.email', read_only=True)
+    class Meta:
+        model = PaymentHistory
+        fields = [
+                  'customer',
+                  'order_info',
+                  'amount_paid', 
+                  'status', 
+                  'payment_channel', 
+                  'transaction_date'
+        ]
