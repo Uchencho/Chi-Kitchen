@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from food.models import OrderInfo, Dish, Cart, OrderEntry
+from food.models import OrderInfo, Dish, Cart, OrderEntry, PaymentHistory
 
 class DishListSerializer(serializers.ModelSerializer):
 
@@ -171,6 +171,17 @@ class OrderDetailSerializer(serializers.ModelSerializer):
             'qty', 
             'total_cost',
             'order_info'
+        ]
+
+
+class PaymentHistorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PaymentHistory
+        fields = [
+                  'amount_paid', 
+                  'status', 
+                  'payment_channel', 
+                  'transaction_date'
         ]
 
 
