@@ -283,7 +283,7 @@ class VerifyPaymentView(APIView):
                         status=status.HTTP_200_OK)
 
 
-# To avoid overflow of information, two views will be created to address 
+# To avoid overflow of information, three views will be created to address 
 # User seeing items he has initialized payment for
 class OrderEntryView(generics.ListAPIView):
     """
