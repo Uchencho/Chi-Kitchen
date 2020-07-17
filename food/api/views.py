@@ -195,7 +195,7 @@ class PaymentCheckoutView(APIView):
         # Create order entry, not details
         order_obj = OrderEntry.objects.create(
             customer_name = self.request.user,
-            dish = ", ".join([line['dish'] for line in self.request.data]),
+            dish = " | ".join([line['dish'] for line in self.request.data]),
             total_cost = amount,
             payment_ref = resp.json()['data']['reference']
             )
