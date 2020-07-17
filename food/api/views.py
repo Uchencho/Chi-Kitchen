@@ -15,6 +15,7 @@ from .serializers import (  DishListSerializer,
                             CarListSerializer,
                             OrderEntrySerializer,
                             OrderDetailSerializer,
+                            PaymentHistorySerializer,
                             OrderListSerializer, 
                             OrderCreateSerializer,
                             CartDetailSerializer)
@@ -22,7 +23,7 @@ from .serializers import (  DishListSerializer,
 
 class DishView(generics.ListAPIView):
     """
-    List all the items in cart for a specific user
+    List all the items in available for purchase
     """
     queryset            = Dish.objects.filter(active=True, date_available__gte=timezone.now().date())
     serializer_class    = DishListSerializer
@@ -194,7 +195,7 @@ class PaymentCheckoutView(APIView):
         # Create order entry, not details
         order_obj = OrderEntry.objects.create(
             customer_name = self.request.user,
-            dish = ", ".join([line['dish'] for line in self.request.data]),
+            dish = " | ".join([line['dish'] for line in self.request.data]),
             total_cost = amount,
             payment_ref = resp.json()['data']['reference']
             )
@@ -282,8 +283,8 @@ class VerifyPaymentView(APIView):
                         status=status.HTTP_200_OK)
 
 
-# To avoid overflow of information, two views will be created to address 
-# User seeing items he has already paid for
+# To avoid overflow of information, three views will be created to address 
+# User seeing items he has initialized payment for
 class OrderEntryView(generics.ListAPIView):
     """
     Lists the overview of orders that have been placed by a user
@@ -314,6 +315,21 @@ class OrderInfoView(generics.ListAPIView):
         the_user = self.request.user
         the_id = self.kwargs.get('pk')
         return OrderInfo.objects.filter(customer_name=the_user, order_info=the_id)
+
+
+class PaymentHistoryView(generics.ListAPIView):
+    """
+    Lists the payment history for each order for a specific user
+    """
+    serializer_class        = PaymentHistorySerializer
+
+    def get_queryset(self, *args, **kwargs):
+        """
+        Filter payment to return only user's payment history
+        """
+        the_user = self.request.user
+        the_id = self.kwargs.get('pk')
+        return PaymentHistory.objects.filter(customer=the_user, order_info=the_id)
 
 
 class PaymentRetryView(APIView):

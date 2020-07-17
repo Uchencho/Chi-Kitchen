@@ -66,7 +66,7 @@ class OrderEntry(models.Model):
     and payment history
     """
 
-    customer_name      = models.ForeignKey(User, on_delete=models.CASCADE)
+    customer_name      = models.ForeignKey(User, on_delete=models.PROTECT)
     status             = models.CharField(max_length=20, default='Pending')
     time_of_order      = models.DateTimeField(auto_now_add=True)
     dish               = models.TextField(help_text='List of dishes')
@@ -89,8 +89,8 @@ class PaymentHistory(models.Model):
     Stores payment history of each order
     """
 
-    order_info         = models.ForeignKey(OrderEntry, on_delete=models.CASCADE)
-    customer           = models.ForeignKey(User, on_delete=models.CASCADE)
+    order_info         = models.ForeignKey(OrderEntry, on_delete=models.PROTECT)
+    customer           = models.ForeignKey(User, on_delete=models.PROTECT)
     amount_paid        = models.IntegerField()
     status             = models.CharField(max_length=20, default='Pending')
     authorization_url  = models.URLField()
@@ -113,12 +113,12 @@ class OrderInfo(models.Model):
     Stores orders details that payment has been confirmed
     """
 
-    order_info         = models.ForeignKey(OrderEntry, on_delete=models.CASCADE)
-    customer_name      = models.ForeignKey(User, on_delete=models.CASCADE)
+    order_info         = models.ForeignKey(OrderEntry, on_delete=models.PROTECT)
+    customer_name      = models.ForeignKey(User, on_delete=models.PROTECT)
     time_of_order      = models.DateTimeField(auto_now_add=True)
     delivery_date      = models.DateField()
     address            = models.TextField()
-    dish               = models.ForeignKey('Dish', on_delete=models.CASCADE)
+    dish               = models.ForeignKey('Dish', on_delete=models.PROTECT)
     qty                = models.IntegerField()
     total_cost         = models.IntegerField()
 

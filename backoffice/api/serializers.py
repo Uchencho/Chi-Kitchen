@@ -30,3 +30,30 @@ class OrderInfoSerializer(serializers.ModelSerializer):
             'total_cost',
             'customer_name',
         ]
+
+
+class CreateDishSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Dish
+        fields = [
+            "id",
+            'name', 
+            'price', 
+            'active', 
+            'dish_type', 
+            'date_available', 
+            'tag'
+        ]
+
+
+class RetrieveDishSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Dish
+        fields = [
+            'name', 
+            'price', 
+            'active', 
+            'dish_type', 
+            'date_available', 
+            'tag'
+        ]
