@@ -13,6 +13,22 @@ class UserSerializer(serializers.ModelSerializer):
                 ]
 
 
+class AllUserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = [ 
+                  'first_name', 
+                  'last_name', 
+                  'phone_number',
+                  'email',
+                  'is_active',
+                  'is_superuser',
+                  'is_staff',
+                  'last_login',
+                  'date_joined' 
+                ]
+
+
 class OrderInfoSerializer(serializers.ModelSerializer):
     customer_name   = UserSerializer(read_only=True)
     order_info      = serializers.CharField(source='order_info.status', read_only=True)
