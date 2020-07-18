@@ -55,5 +55,23 @@ class UserListView(generics.ListAPIView):
     queryset                = User.objects.all()
     search_fields           = ['first_name','last_name','phone_number','email']
 
+
+class UserDetailView(generics.RetrieveUpdateDestroyAPIView):
+    permission_class        = [permissions.IsAdminUser]
+    serializer_class        = AllUserSerializer
+    queryset                = User.objects.all()
+
+    def put(self, request, *args, **kwargs):
+        """
+        Edit a dish
+        """
+        return self.update(request, *args, **kwargs)
+
+    def delete(self, request, *args, **kwargs):
+        """
+        Delete a dish
+        """
+        return self.destroy(request, *args, **kwargs)
+
 # Insert pagination on each backoffice view
 # create dish view

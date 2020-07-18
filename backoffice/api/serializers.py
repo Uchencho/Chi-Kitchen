@@ -16,7 +16,8 @@ class UserSerializer(serializers.ModelSerializer):
 class AllUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = [ 
+        fields = [
+                  'id',
                   'first_name', 
                   'last_name', 
                   'phone_number',
@@ -27,6 +28,7 @@ class AllUserSerializer(serializers.ModelSerializer):
                   'last_login',
                   'date_joined' 
                 ]
+        read_only_fields = ['last_login','date_joined']
 
 
 class OrderInfoSerializer(serializers.ModelSerializer):
