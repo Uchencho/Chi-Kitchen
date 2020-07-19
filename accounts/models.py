@@ -2,6 +2,13 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.contrib.auth.base_user import BaseUserManager
 
+class TokenQuerySet(models.QuerySet):
+    pass
+
+class TokenManager(models.Manager):
+    def get_queryset(self):
+        return TokenQuerySet(self.model, using=self._db)
+
 class CustomUserManager(BaseUserManager):
     use_in_migrations = True
 
@@ -41,3 +48,15 @@ class User(AbstractUser):
 
     objects = CustomUserManager()
 
+
+class Token_keeper(models.Model):
+    User            = models.ForeignKey(User, on_delete=models.CASCADE)
+    access_token    = models.CharField(max_length=200)
+    refresh_token   = models.CharField(max_length=200)
+    allowed         = models.BooleanField(default=True)
+
+    objects = TokenManager
+
+    class Meta:
+        verbose_name = 'Token'
+        verbose_name_plural = 'Tokens'

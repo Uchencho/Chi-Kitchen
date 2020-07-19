@@ -7,5 +7,4 @@ urlpatterns = [
     path('api/accounts/', include('accounts.api.urls', namespace='api-accounts')),
     path('api/food/', include('food.api.urls', namespace='api-food')),
     path('api/backoffice/', include('backoffice.api.urls', namespace='api-backoffice')),
-    path('o/', include('oauth2_provider.urls', namespace='oauth2_provider')),
 ]

@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import User
+from .models import User, Token_keeper
 
 from django import forms
 from django.contrib import admin
@@ -34,8 +34,13 @@ class MyUserAdmin(admin.ModelAdmin):
     ordering = ('id',)
     filter_horizontal = ()
 
+
+class TokenAdmin(admin.ModelAdmin):
+    list_display = ['User','access_token', 'refresh_token','allowed']
+
 # Now register the new UserAdmin...
 admin.site.register(User, MyUserAdmin)
+admin.site.register(Token_keeper, TokenAdmin)
 # ... and, since we're not using Django's builtin permissions,
 # unregister the Group model from admin.
 # admin.site.unregister(Group)

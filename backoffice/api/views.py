@@ -3,8 +3,10 @@ from rest_framework import generics, permissions
 from .serializers import (OrderInfoSerializer, 
                           CreateDishSerializer,
                           RetrieveDishSerializer,
-                          AllPaymentHistorySerializer
+                          AllPaymentHistorySerializer,
+                          AllUserSerializer
                           )
+from accounts.models import User
 from food.models import OrderInfo, Dish, Cart, OrderEntry, PaymentHistory
 
 
@@ -45,6 +47,31 @@ class PaymentHistoryAdminView(generics.ListAPIView):
     serializer_class        = AllPaymentHistorySerializer
     queryset                = PaymentHistory.objects.all()
     search_fields           = ['customer__email', 'payment_channel', 'transaction_date', 'status']
+
+
+class UserListView(generics.ListAPIView):
+    permission_class        = [permissions.IsAdminUser]
+    serializer_class        = AllUserSerializer
+    queryset                = User.objects.all()
+    search_fields           = ['first_name','last_name','phone_number','email']
+
+
+class UserDetailView(generics.RetrieveUpdateDestroyAPIView):
+    permission_class        = [permissions.IsAdminUser]
+    serializer_class        = AllUserSerializer
+    queryset                = User.objects.all()
+
+    def put(self, request, *args, **kwargs):
+        """
+        Edit a dish
+        """
+        return self.update(request, *args, **kwargs)
+
+    def delete(self, request, *args, **kwargs):
+        """
+        Delete a dish
+        """
+        return self.destroy(request, *args, **kwargs)
 
 # Insert pagination on each backoffice view
 # create dish view

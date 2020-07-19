@@ -2,7 +2,9 @@ from .views import (
                     OrderInfoView, 
                     CreateDishView, 
                     DishDetailView,
-                    PaymentHistoryAdminView
+                    PaymentHistoryAdminView,
+                    UserListView,
+                    UserDetailView
                     )
 from django.urls import path, include
 
@@ -13,4 +15,6 @@ urlpatterns = [
     path('dish/', CreateDishView.as_view(), name='dish'),
     path('dish/<int:pk>/', DishDetailView.as_view(), name='editdish'),
     path('payments/', PaymentHistoryAdminView.as_view(), name='dish'),
+    path('users/', UserListView.as_view(), name='users'),
+    path('users/<int:pk>/', UserDetailView.as_view(), name='userdetail'),
 ]
