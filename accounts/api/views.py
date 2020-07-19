@@ -8,10 +8,8 @@ from rest_framework import generics, status, permissions
 from rest_framework.authentication import get_authorization_header
 from rest_framework.views import APIView
 from rest_framework.response import Response
+from rest_framework_simplejwt.views import TokenObtainPairView
 
-from kitchen.settings import CLIENT_SECRET, CLIENT_ID
-
-BASE_URL = 'http://localhost:8000/'
 
 class RegisterAPIView(generics.CreateAPIView):
     queryset            = User.objects.all()
@@ -19,47 +17,11 @@ class RegisterAPIView(generics.CreateAPIView):
     permission_classes  = []
 
 
-class LoginView(APIView):
-    serializer_class    = LoginSerializer
-    permission_classes  = []
-    
-    def post(self, request):
-
-        email = request.data.get('username')
-        qs = User.objects.filter(email__iexact=email)
-
-        r = requests.post(
-            BASE_URL + 'o/token/',
-            data = {
-                'grant_type' : 'password',
-                'username' : email,
-                'password' : request.data.get('password'),
-                'client_id' : CLIENT_ID,
-                'client_secret' : CLIENT_SECRET,
-            },
-        )
-
-        if r.json().get("error_description") == "Invalid credentials given.":
-            content = {
-                    "message": "Invalid credentials given."
-                }
-            return Response(content, status=status.HTTP_400_BAD_REQUEST)
-        else:
-            user_model = qs.first()
-            content = r.json()
-            try:
-                last_login_val = user_model.last_login.strftime("%d-%b-%Y")
-            except:
-                last_login_val = user_model.date_joined.strftime("%d-%b-%Y")
-            content['id'] = user_model.id
-            content['fullname'] = user_model.first_name + " " + user_model.last_name
-            content["last_login"] = last_login_val
-            content["date_joined"] = user_model.date_joined.strftime("%d-%b-%Y")
-
-            user_model.last_login = timezone.now()
-            user_model.save()
-
-            return Response(content, status=status.HTTP_200_OK)
+class LoginView(TokenObtainPairView):
+    """
+    Login endpoint that returns access token and refresh token
+    """
+    serializer_class = LoginSerializer
 
 
 class LogoutView(APIView):

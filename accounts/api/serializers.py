@@ -1,6 +1,8 @@
 from accounts.models import User
 
 from rest_framework import serializers
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from django.utils import timezone
 
 
 class RegisterSerializer(serializers.ModelSerializer):
@@ -35,13 +37,46 @@ class RegisterSerializer(serializers.ModelSerializer):
         return user_obj
 
 
-class LoginSerializer(serializers.ModelSerializer):
-    password            = serializers.CharField(style={'input_type':'password'}, write_only=True)
+# class LoginSerializer(serializers.ModelSerializer):
+#     password            = serializers.CharField(style={'input_type':'password'}, write_only=True)
 
-    class Meta:
-        model   = User
-        fields  = [
-            'username',
-            'password',
-        ]
+#     class Meta:
+#         model   = User
+#         fields  = [
+#             'username',
+#             'password',
+#         ]
+
+class LoginSerializer(TokenObtainPairSerializer):
+    @classmethod
+    def get_token(cls, user):
+        token = super().get_token(user)
+        return token
+
+    def validate(self, attrs):
+        # The default result (access/refresh tokens)
+    
+        data = super(LoginSerializer, self).validate(attrs)
+
+        #retrieve the user model and the student model
+        user = User.objects.filter(username__iexact=self.user.username).first()
+
+        try:
+            last_login = user.last_login.strftime("%d-%b-%Y")
+        except:
+            last_login = user.date_joined.strftime("%d-%b-%Y")
+
+
+        #update the response with id and username
+        data.update({'id': self.user.id,
+                    'username': self.user.username,
+                    'First name' : self.user.first_name,
+                    'Date registered' : user.date_joined.strftime("%d-%b-%Y"),
+                    'last login' : last_login,    
+        })
+
+        self.user.last_login = timezone.now()
+        self.user.save()
+
+        return data
         
