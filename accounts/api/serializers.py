@@ -1,4 +1,4 @@
-from accounts.models import User
+from accounts.models import User, Token_keeper
 
 from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
@@ -37,16 +37,6 @@ class RegisterSerializer(serializers.ModelSerializer):
         return user_obj
 
 
-# class LoginSerializer(serializers.ModelSerializer):
-#     password            = serializers.CharField(style={'input_type':'password'}, write_only=True)
-
-#     class Meta:
-#         model   = User
-#         fields  = [
-#             'username',
-#             'password',
-#         ]
-
 class LoginSerializer(TokenObtainPairSerializer):
     @classmethod
     def get_token(cls, user):
@@ -70,10 +60,17 @@ class LoginSerializer(TokenObtainPairSerializer):
         #update the response with id and username
         data.update({'id': self.user.id,
                     'username': self.user.username,
-                    'First name' : self.user.first_name,
+                    'Name' : self.user.first_name + " " + self.user.last_name,
                     'Date registered' : user.date_joined.strftime("%d-%b-%Y"),
                     'last login' : last_login,    
         })
+
+        # Create a token record
+        Token_keeper.objects.create(
+            User = self.user,
+            access_token = data.get('access'),
+            refresh_token = data.get("refresh")
+        ) 
 
         self.user.last_login = timezone.now()
         self.user.save()
