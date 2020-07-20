@@ -1,11 +1,16 @@
 from accounts.models import User, Token_keeper
-from .serializers import RegisterSerializer, LoginSerializer
+from .serializers import  (
+                            RegisterSerializer,
+                            LoginSerializer,
+                            RefreshSerializer
+                        )
 
 from rest_framework import generics, status, permissions
 from rest_framework.authentication import get_authorization_header
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework_simplejwt.views import TokenObtainPairView
+from .permissions import IsTokenValid
+from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 
 class RegisterAPIView(generics.CreateAPIView):
@@ -19,6 +24,16 @@ class LoginView(TokenObtainPairView):
     Login endpoint that returns access token and refresh token
     """
     serializer_class = LoginSerializer
+
+
+class RefreshTokenView(TokenRefreshView):
+    """
+    Login endpoint that returns access token and refresh token
+    """
+    serializer_class = RefreshSerializer
+
+    def get_serializer_context(self, *args, **kwargs):
+        return {"request":self.request}
 
 
 class LogoutView(APIView):

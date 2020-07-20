@@ -1,7 +1,7 @@
 from accounts.models import User, Token_keeper
 
 from rest_framework import serializers
-from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer, TokenRefreshSerializer
 from django.utils import timezone
 
 
@@ -75,5 +75,19 @@ class LoginSerializer(TokenObtainPairSerializer):
         self.user.last_login = timezone.now()
         self.user.save()
 
+        return data
+
+
+class RefreshSerializer(TokenRefreshSerializer):
+    def validate(self, attrs):
+        # The default result (access/refresh tokens)
+
+        context = self.context['request']
+        in_refresh = context.data.get("refresh")
+        qs = Token_keeper.objects.filter(refresh_token=in_refresh, allowed=False)
+        if qs.exists():
+            raise serializers.ValidationError({"refresh token" : "Logged out user, please login again"})
+
+        data = super(TokenRefreshSerializer, self).validate(attrs)
         return data
         
