@@ -1,8 +1,5 @@
-from accounts.models import User
+from accounts.models import User, Token_keeper
 from .serializers import RegisterSerializer, LoginSerializer
-
-import requests
-from django.utils import timezone
 
 from rest_framework import generics, status, permissions
 from rest_framework.authentication import get_authorization_header
@@ -30,21 +27,18 @@ class LogoutView(APIView):
     def post(self, request):
         '''
         Method to revoke tokens.
-        {"token": "<token>"}
+        {"refresh": "<refresh_token>"}
         '''
-        # r = requests.post(
-        #     'http://0.0.0.0:8000/o/revoke_token/', 
-        #     data={
-        #         'token': request.data['token'],
-        #         'client_id': CLIENT_ID,
-        #         'client_secret': CLIENT_SECRET,
-        #     },
-        # )
-        # # If it goes well return sucess message (would be empty otherwise) 
-        # if r.status_code == requests.codes.ok:
-        #     return Response({'message': 'token revoked'}, r.status_code)
-        # # Return the error if it goes badly
-        # return Response(r.json(), r.status_code)
-        # https://medium.com/@halfspring/guide-to-an-oauth2-api-with-django-6ba66a31d6d
-        print("helloooo", get_authorization_header(request))
+        user = request.user
+        access = get_authorization_header(request).decode('utf-8').split(" ")[1]
+        refresh = request.data.get("refresh")
+        qs = Token_keeper.objects.filter(
+            User = user,
+            access_token = access,
+            refresh_token = refresh,
+        )
+        if not qs.exists():
+            return Response({"message" : "Invalid credentials"},
+                            status = status.HTTP_400_BAD_REQUEST)
+        qs.update(allowed=False)
         return Response(status=status.HTTP_200_OK)

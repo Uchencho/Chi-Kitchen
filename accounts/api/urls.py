@@ -9,5 +9,5 @@ app_name = "accounts"
 urlpatterns = [
     path('register/', RegisterAPIView.as_view(), name='register'),
     path('login/', LoginView.as_view(), name='login'),
-    # path('logout/', RevokeTokenView.as_view(), name='logout'),
+    path('logout/', LogoutView.as_view(), name='logout'),
 ]
