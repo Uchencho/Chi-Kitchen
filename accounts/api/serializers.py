@@ -37,6 +37,26 @@ class RegisterSerializer(serializers.ModelSerializer):
         return user_obj
 
 
+class ProfileUpdateSerializer(serializers.ModelSerializer):
+    email           = serializers.SerializerMethodField(read_only=True)
+
+    def get_email(self, obj):
+        return obj.email
+
+    class Meta:
+        model = User
+        fields = [
+            'id',
+            'email',
+            'username',
+            'first_name',
+            'last_name',
+            'phone_number',
+            'house_add',
+            'off_add',
+        ]
+
+
 class LoginSerializer(TokenObtainPairSerializer):
     @classmethod
     def get_token(cls, user):

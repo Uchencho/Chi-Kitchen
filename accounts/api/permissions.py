@@ -9,7 +9,10 @@ class IsTokenValid(permissions.BasePermission):
         user = request.user
         is_allowed_user = True
 
-        token = get_authorization_header(request).decode('utf-8').split(" ")[1]
+        try:
+            token = get_authorization_header(request).decode('utf-8').split(" ")[1]
+        except IndexError:
+            return False
         qs = Token_keeper.objects.filter(User=user, 
                                         access_token=token,
                                         allowed = False)
