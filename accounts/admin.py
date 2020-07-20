@@ -36,7 +36,7 @@ class MyUserAdmin(admin.ModelAdmin):
 
 
 class TokenAdmin(admin.ModelAdmin):
-    list_display = ['User','access_token', 'refresh_token','allowed']
+    list_display = ['User','allowed']
 
 # Now register the new UserAdmin...
 admin.site.register(User, MyUserAdmin)
