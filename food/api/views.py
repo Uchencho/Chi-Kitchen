@@ -352,7 +352,12 @@ class PaymentRetryView(APIView):
                 return Response({'Error': f"{dl} is no longer available on {dv_l}"}, 
                             status=status.HTTP_400_BAD_REQUEST)
 
-        order_obj = OrderEntry.objects.get(pk=data_[0].get('order_info'))
+        order_qs = OrderEntry.objects.filter(pk=data_[0].get('order_info'))
+        if not order_qs.exists():
+            return Response({'Error': "Order Entry does not exist"}, 
+                            status=status.HTTP_400_BAD_REQUEST)
+
+        order_obj = order_qs.first()
         email = self.request.user.email
         amount = sum([line['total_cost'] for line in data_])
         link = "https://api.paystack.co/transaction/initialize"
