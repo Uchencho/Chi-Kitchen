@@ -80,3 +80,25 @@ This is where the meat of the service lies, this app is responsible for creating
 - __PaymentHistoryView__ : For each order entry, I provided a list view for all payment trials.
 
 - __PaymentRetryView__ : Last but not least, a payment retry view. This can only be initaited from the order entry view. This was done where a user sees that his payment failed and would like to try again.
+
+
+#### Backoffice
+Yes, the admin page is up and running but it has some limitations and I wanted to experiment building endpoints that mirror some of the things admin does. All the endpoints in the backoffice app need admin user priviledges to access :guardsman:.
+
+The following endpoints are available:
+
+- __OrderInfoView__ : Lists all order information for all users. Search capability is extended for this view as the admin is allowed to search by delivery date and status of order info.
+
+- __CreateDishView__ : Allows an admin create a dish :fries:
+
+- __DishDetailView__ : Details a dish that has already been created and allows the admin access to delete dishes and deactivate dishes.
+
+- __PaymentHistoryAdminView__ : Endpoint that allows the admin see all payment attempts that have been initiated through the app.
+
+- __UserListView__ :  Allows the admin to see all :woman: and :man:
+
+- __UserDetailView__ : Details of a user, allows admin have the user to all fields apart from PASSWORD :lock:. Admin user also has the priveledge of deleting a particular user profile. By design, deleting a user's profile cascades a lot actions (deletes everything about that user on the system, EVERYTHING).
+
+
+### Contribution
+Any issue or suggestion, please raise an issue or make a PR. Leave a like please :grin:, I like the attention :wink:
