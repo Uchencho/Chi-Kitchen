@@ -37,7 +37,7 @@ Needless to say, the project is segmented into apps:
 - Backoffice
 - Food :poultry_leg:
 
-No, I didn't upload a documentation because I have not hosted it and I have esperience doing that already. [Sample documentation by me](https://documenter.getpostman.com/view/11324986/SzzhddRx?version=latest#044d99a9-a717-4581-873b-40f18462fd73).
+No, I didn't upload a documentation because I have not hosted it and I have experience doing that already. [Sample documentation by me](https://documenter.getpostman.com/view/11324986/SzzhddRx?version=latest#044d99a9-a717-4581-873b-40f18462fd73).
 Yes I wrote tests, they can be found in api/tests.py for each app.
 I am huge fan of class based views so 99% of my views are CBV :grin:. Yes, I definitely use serializers in my APIs.
 
@@ -51,11 +51,11 @@ Security is very important, so although an access token and a refresh token is r
 it would expire in 30 minutes and the refresh token would expire in 90 minutes.:alien:
 
 Five Views were created as endpoints
-- Registeration view: as the name implies, registers users
-- Profile Detail view: allows users edit their details, it doesn't allow users to delete their profile
-- Login View : returns details of a user, access and refresh tokens too
-- Refreshtoken View : refreshes a token as long as it was not used to logout
-- Logout View - Adds tokens to black listed table of tokens
+- __Registeration view__: as the name implies, registers users
+- __Profile Detail view__: allows users edit their details, it doesn't allow users to delete their profile
+- __Login View__: returns details of a user, access and refresh tokens too
+- __Refreshtoken View__: refreshes a token as long as it was not used to logout
+- __Logout View__: Adds tokens to black listed table of tokens
 
 
 #### Food :hamburger: :poultry_leg:
