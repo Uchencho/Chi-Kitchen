@@ -1,4 +1,5 @@
 from accounts.models import User, Token_keeper
+from .permissions import BasicToken
 from .serializers import  (
                             RegisterSerializer,
                             ProfileUpdateSerializer,
@@ -17,9 +18,10 @@ class RegisterAPIView(generics.CreateAPIView):
     """
     Registers a user (creates a account)
     """
-    queryset            = User.objects.all()
-    serializer_class    = RegisterSerializer
-    permission_classes  = []
+    queryset                = User.objects.all()
+    serializer_class        = RegisterSerializer
+    permission_classes      = [BasicToken]
+    authentication_classes  = []
 
 
 class ProfileDetailApiView(generics.RetrieveUpdateAPIView):
@@ -52,10 +54,13 @@ class ProfileDetailApiView(generics.RetrieveUpdateAPIView):
 
 
 class LoginView(TokenObtainPairView):
+    permission_classes  = [BasicToken]
     """
     Login endpoint that returns access token and refresh token
     """
-    serializer_class = LoginSerializer
+    serializer_class        = LoginSerializer
+    permission_classes      = [BasicToken]
+    authentication_classes  = []
 
 
 class RefreshTokenView(TokenRefreshView):

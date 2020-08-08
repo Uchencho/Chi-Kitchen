@@ -100,7 +100,7 @@ class AccountAPITestCase(APITestCase):
             }
 
         url_reg = api_reverse('api-accounts:register')
-        register_response = self.client.post(url_reg, reg_data, format='json')
+        self.client.post(url_reg, reg_data, format='json')
 
         token_data = { "email" : "john@gmail.com",
                         "password" : "chefchi"

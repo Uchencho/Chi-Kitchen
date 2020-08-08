@@ -19,3 +19,17 @@ class IsTokenValid(permissions.BasePermission):
         if qs.exists():
             is_allowed_user = False
         return is_allowed_user
+
+
+class BasicToken(permissions.BasePermission):
+    message = "No token was passed"
+
+    def has_permission(self, request, view):
+        token = "c6acc7ddb4e23e275382d3eea89fae82fee144e598e7728fc3daf418a78daa77"
+        try:
+            in_token = get_authorization_header(request).decode('utf-8').split(" ")[1]
+        except IndexError:
+            return False
+        if token != in_token:
+            return False
+        return True
