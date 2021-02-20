@@ -83,7 +83,6 @@ class OrderEntry(models.Model):
         verbose_name_plural = 'Order Entries'
 
 
-
 class PaymentHistory(models.Model):
     """
     Stores payment history of each order
@@ -105,7 +104,6 @@ class PaymentHistory(models.Model):
     class Meta:
         verbose_name = 'Paymnet History'
         verbose_name_plural = 'Payment History'
-
 
 
 class OrderInfo(models.Model):
