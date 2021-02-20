@@ -1,0 +1,20 @@
+{
+    "staging": {
+        "aws_region": "us-east-1",
+        "django_settings": "kitchen.settings",
+        "profile_name": "default",
+        "project_name": "kitchen-project",
+        "runtime": "python3.6",
+        "s3_bucket": "uchenchostorage",
+        "endpoint_configuration": ["EDGE"],
+        "keep_warm": false,
+        "lambda_description": "ChefChi django application",
+        "cors": true,
+        "aws_environment_variables" : {"key" : "This will show up on aws console"},
+        "apigateway_description": "Chefchi serverless proxy API",
+        "environment_variables": {  "key" : "This is local env",
+                                    "ENV": "AWS",
+                                    "CLOUD_KEY" : "Some long value"
+                                }
+    }
+}
