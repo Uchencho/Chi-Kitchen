@@ -1,0 +1,15 @@
+1) Venv is easier to manage than pipenv
+2) If you are using sqlite3 in your settings, navigate to 
+venv/lib/python3.6/site-packages/django/db/backends/sqlite3/base.py
+and change line 65 to "pass"
+3) You will need to manually configure all the routes using 
+the console to avoid using a proxy to your lambda
+4) Check the zappa settings of latest repo
+5) Ensure zappa settings is not committed to git
+6) After the initial deployment with "zappa deploy", you will
+need to change the allowed host before all can be well
+7) No need to configure CORS(app-wise), I think. Zappa settings
+provides this configuration.
+8) Use django when working with a relational DB. If you need to
+run script which is invoked through an API, use flask. I do not
+think fast api has a zappa integration.
