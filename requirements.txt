@@ -41,7 +41,7 @@ tqdm==4.57.0
 troposphere==2.6.3
 typed-ast==1.4.1
 typing-extensions==3.7.4.3
-urllib3==1.25.9
+urllib3==1.26.5
 Werkzeug==0.16.1
 wrapt==1.12.1
 wsgi-request-logger==0.4.6
