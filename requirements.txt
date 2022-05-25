@@ -25,7 +25,7 @@ oauthlib==3.1.0
 pip-tools==5.5.0
 pkg-resources==0.0.0
 placebo==0.9.0
-PyJWT==1.7.1
+PyJWT==2.4.0
 pylint==2.5.3
 python-dateutil==2.8.1
 python-slugify==4.0.1
